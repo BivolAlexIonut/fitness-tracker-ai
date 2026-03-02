@@ -1,8 +1,7 @@
 FROM python:3.10-slim
 WORKDIR /app
-# Aici veți adăuga mai târziu bibliotecile pentru AI (ex: scikit-learn, pandas)
 COPY requirements.txt .
-RUN touch requirements.txt # Doar un placeholder pentru acum
+RUN touch requirements.txt
 COPY . .
 EXPOSE 8000
 CMD ["python", "-m", "http.server", "8000"]
