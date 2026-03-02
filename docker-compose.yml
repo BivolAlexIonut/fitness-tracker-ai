@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  # 1. Baza de date relațională pentru Java (ORM)
+  db:
+    image: mysql:8.0
+    container_name: fitness_mysql
+    restart: always
+    environment:
+      MYSQL_DATABASE: fitness_app_db
+      MYSQL_ROOT_PASSWORD: rootpassword
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+
+  # 2. Serviciul de Inteligență Artificială (Python) - pregătit pentru viitor
+  ai-service:
+    build: ./ai-service-python
+    container_name: fitness_ai_python
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+
+volumes:
+  db_data:
