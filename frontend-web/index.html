@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <title>Fitness Tracker AI</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="grid-pagina">
+        <header class="header">
+            <h1>My Fitness AI</h1>
+        </header>
+        
+        <aside class="sidebar">
+            <button>Profilul meu</button>
+            <button>Adaugă Antrenament</button>
+            <button id="btn-predictie">Predicție AI</button>
+        </aside>
+
+        <main class="content">
+            <div class="card">
+                <h2>Statistici Azi</h2>
+                <p>Calorii arse: <span id="calorii">0</span> kcal</p>
+                <p>Timp activ: 0 min</p>
+            </div>
+            <div class="card" style="border-color: #00ff88;">
+                <h2>Predicție AI (Progres 30 zile)</h2>
+                <p id="predictie-text">Aștept datele din modulul Python...</p>
+            </div>
+        </main>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,50 @@
+:root {
+    --culoare-contur: #444;
+    --fundal: #1a1a1a;
+    --text: #ffffff;
+    --verde-ai: #00ff88;
+}
+
+body {
+    background-color: var(--fundal);
+    color: var(--text);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+}
+
+#grid-pagina {
+    display: grid;
+    grid-template-areas: 
+        "header header"
+        "sidebar content";
+    grid-template-columns: 250px 1fr;
+    height: 100vh;
+}
+
+#grid-pagina > * {
+    border: 1px solid var(--culoare-contur);
+    padding: 20px;
+}
+
+.header { grid-area: header; text-align: center; border-bottom: 2px solid var(--verde-ai) !important; }
+.sidebar { grid-area: sidebar; display: flex; flex-direction: column; gap: 15px; background: #222; }
+.content { grid-area: content; display: flex; gap: 20px; align-items: start; }
+
+button {
+    padding: 10px;
+    background: #333;
+    color: white;
+    border: 1px solid var(--culoare-contur);
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+button:hover { background: var(--verde-ai); color: black; font-weight: bold; }
+
+.card {
+    background: #2a2a2a;
+    padding: 20px;
+    border-radius: 10px;
+    flex: 1;
+    border: 1px solid var(--culoare-contur);
+}
