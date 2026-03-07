@@ -1,15 +1,19 @@
 :root {
-    --culoare-contur: #444;
-    --fundal: #1a1a1a;
-    --text: #ffffff;
+    --fundal: #0a0a0a;
+    --card-bg: #141414;
+    --card-border: #222;
+    --text-principal: #ffffff;
+    --text-secundar: #a0a0a0;
     --verde-ai: #00ff88;
+    --accent-glow: rgba(0, 255, 136, 0.15);
 }
 
 body {
     background-color: var(--fundal);
-    color: var(--text);
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: var(--text-principal);
+    font-family: 'Inter', 'Segoe UI', Roboto, sans-serif;
     margin: 0;
+    overflow-x: hidden;
 }
 
 #grid-pagina {
@@ -17,34 +21,148 @@ body {
     grid-template-areas: 
         "header header"
         "sidebar content";
-    grid-template-columns: 250px 1fr;
+    grid-template-columns: 280px 1fr;
+    grid-template-rows: 70px 1fr;
     height: 100vh;
 }
 
-#grid-pagina > * {
-    border: 1px solid var(--culoare-contur);
-    padding: 20px;
+/* Header */
+.header {
+    grid-area: header;
+    background-color: var(--card-bg);
+    border-bottom: 1px solid var(--card-border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 30px;
+    z-index: 10;
 }
 
-.header { grid-area: header; text-align: center; border-bottom: 2px solid var(--verde-ai) !important; }
-.sidebar { grid-area: sidebar; display: flex; flex-direction: column; gap: 15px; background: #222; }
-.content { grid-area: content; display: flex; gap: 20px; align-items: start; }
-
-button {
-    padding: 10px;
-    background: #333;
-    color: white;
-    border: 1px solid var(--culoare-contur);
-    cursor: pointer;
-    border-radius: 5px;
+.header h1 {
+    font-size: 1.5rem;
+    letter-spacing: 1px;
+    background: linear-gradient(90deg, #fff, var(--verde-ai));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin: 0;
 }
 
-button:hover { background: var(--verde-ai); color: black; font-weight: bold; }
+/* Sidebar */
+.sidebar {
+    grid-area: sidebar;
+    background-color: var(--card-bg);
+    border-right: 1px solid var(--card-border);
+    padding: 30px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.sidebar button {
+    text-align: left;
+    padding: 12px 15px;
+    background: transparent;
+    border: 1px solid transparent;
+    color: var(--text-secundar);
+    font-size: 0.95rem;
+    font-weight: 500;
+    transition: 0.3s;
+}
+
+.sidebar button:hover, .sidebar button.active {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--verde-ai);
+    border-color: rgba(0, 255, 136, 0.2);
+}
+
+/* Content Area */
+.content {
+    grid-area: content;
+    padding: 40px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 30px;
+    background: radial-gradient(circle at top right, #111, #0a0a0a);
+}
 
 .card {
-    background: #2a2a2a;
-    padding: 20px;
-    border-radius: 10px;
-    flex: 1;
-    border: 1px solid var(--culoare-contur);
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 16px;
+    padding: 25px;
+    transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.card:hover {
+    border-color: var(--verde-ai);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 20px var(--accent-glow);
+    transform: translateY(-5px);
+}
+
+.card h2 {
+    margin-top: 0;
+    font-size: 1.2rem;
+    color: var(--text-secundar);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.card p {
+    font-size: 1.1rem;
+    margin: 15px 0;
+}
+
+.card span {
+    color: var(--verde-ai);
+    font-weight: bold;
+    font-size: 1.4rem;
+}
+
+/* Buttons */
+button {
+    cursor: pointer;
+    border-radius: 8px;
+    font-family: inherit;
+    transition: all 0.2s;
+}
+
+#btn-logout {
+    padding: 8px 16px;
+    font-weight: 600;
+    background: #222;
+    border: 1px solid #333;
+    color: #ff4444;
+}
+
+#btn-logout:hover {
+    background: #ff4444;
+    color: white;
+}
+
+#btn-predictie {
+    background: var(--verde-ai);
+    color: black;
+    border: none;
+    font-weight: bold;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--fundal);
+}
+
+::-webkit-scrollbar-thumb {
+    background: #333;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #444;
 }

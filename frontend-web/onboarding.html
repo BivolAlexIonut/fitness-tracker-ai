@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personalizare AI - Athletica AI</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background: #0a0a0a;
+            margin: 0;
+        }
+        .onboarding-card {
+            max-width: 600px;
+            width: 90%;
+            background: #141414;
+            padding: 40px;
+            border-radius: 20px;
+            border: 1px solid #222;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+        }
+        .step-indicator {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+        .step {
+            flex: 1;
+            height: 4px;
+            background: #333;
+            border-radius: 2px;
+        }
+        .step.active {
+            background: var(--verde-ai);
+            box-shadow: 0 0 10px var(--verde-ai);
+        }
+        h2 {
+            color: white;
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+        }
+        p.subtitle {
+            color: #888;
+            margin-bottom: 30px;
+        }
+        .option-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        .option-card {
+            background: #1a1a1a;
+            border: 2px solid #333;
+            padding: 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: 0.3s;
+            text-align: center;
+        }
+        .option-card:hover {
+            border-color: #555;
+        }
+        .option-card.selected {
+            border-color: var(--verde-ai);
+            background: rgba(0, 255, 136, 0.05);
+        }
+        .option-card h3 {
+            margin: 0;
+            font-size: 1rem;
+            color: white;
+        }
+        .form-group {
+            margin-bottom: 25px;
+        }
+        label {
+            display: block;
+            color: #aaa;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 15px;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 8px;
+            color: white;
+            font-size: 1rem;
+        }
+        .btn-next {
+            width: 100%;
+            padding: 15px;
+            background: var(--verde-ai);
+            border: none;
+            border-radius: 8px;
+            color: black;
+            font-weight: bold;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .btn-next:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 255, 136, 0.4);
+        }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+    <div class="onboarding-card">
+        <div class="step-indicator">
+            <div class="step active" id="s1"></div>
+            <div class="step" id="s2"></div>
+            <div class="step" id="s3"></div>
+        </div>
+
+        <!-- Pasul 1: Scopuri -->
+        <div id="step-1">
+            <h2>Care este obiectivul tău principal?</h2>
+            <p class="subtitle">AI-ul nostru va ajusta planul de antrenament în funcție de acesta.</p>
+            <div class="option-grid">
+                <div class="option-card" onclick="selectGoal(this, 'Weight Loss')">
+                    <h3>Slăbire</h3>
+                </div>
+                <div class="option-card" onclick="selectGoal(this, 'Muscle Gain')">
+                    <h3>Masă Musculară</h3>
+                </div>
+                <div class="option-card" onclick="selectGoal(this, 'Endurance')">
+                    <h3>Rezistență</h3>
+                </div>
+                <div class="option-card" onclick="selectGoal(this, 'Maintenance')">
+                    <h3>Menținere</h3>
+                </div>
+            </div>
+            <button class="btn-next" onclick="nextStep(2)">Continuă</button>
+        </div>
+
+        <!-- Pasul 2: Tip Sport & Frecvență -->
+        <div id="step-2" class="hidden">
+            <h2>Spune-ne despre rutina ta</h2>
+            <p class="subtitle">Ce sport practici și cât de des?</p>
+            <div class="form-group">
+                <label>Tipul de sport (ex: CrossFit, Fotbal, Gym)</label>
+                <input type="text" id="sports-type" placeholder="ex: CrossFit">
+            </div>
+            <div class="form-group">
+                <label>De câte ori pe săptămână te antrenezi?</label>
+                <select id="training-frequency">
+                    <option value="1">O dată pe săptămână</option>
+                    <option value="2">2 zile / săptămână</option>
+                    <option value="3">3 zile / săptămână</option>
+                    <option value="4">4 zile / săptămână</option>
+                    <option value="5">5 zile / săptămână</option>
+                    <option value="6">6 zile / săptămână</option>
+                    <option value="7">Zilnic</option>
+                </select>
+            </div>
+            <button class="btn-next" onclick="nextStep(3)">Ultimul pas</button>
+        </div>
+
+        <!-- Pasul 3: Detalii suplimentare -->
+        <div id="step-3" class="hidden">
+            <h2>Informații Extra pentru AI</h2>
+            <p class="subtitle">Ai vreo accidentare sau preferințe specifice?</p>
+            <div class="form-group">
+                <label>Note suplimentare (opțional)</label>
+                <textarea id="additional-notes" rows="4" placeholder="Vreau să mă concentrez pe mobilitate..."></textarea>
+            </div>
+            <button class="btn-next" id="btn-finish">Finalizează Profilul</button>
+        </div>
+    </div>
+
+    <script>
+        let onboardingData = {
+            fitnessGoal: '',
+            sportsType: '',
+            trainingFrequency: 1,
+            additionalNotes: ''
+        };
+
+        function selectGoal(element, goal) {
+            document.querySelectorAll('.option-card').forEach(el => el.classList.remove('selected'));
+            element.classList.add('selected');
+            onboardingData.fitnessGoal = goal;
+        }
+
+        function nextStep(step) {
+            if (step === 2 && !onboardingData.fitnessGoal) {
+                alert('Te rugăm să selectezi un obiectiv.');
+                return;
+            }
+            document.getElementById('step-1').classList.add('hidden');
+            document.getElementById('step-2').classList.add('hidden');
+            document.getElementById('step-3').classList.add('hidden');
+            document.getElementById('step-' + step).classList.remove('hidden');
+            
+            document.getElementById('s' + step).classList.add('active');
+        }
+
+        document.getElementById('btn-finish').addEventListener('click', async () => {
+            onboardingData.sportsType = document.getElementById('sports-type').value;
+            onboardingData.trainingFrequency = parseInt(document.getElementById('training-frequency').value);
+            onboardingData.additionalNotes = document.getElementById('additional-notes').value;
+
+            const user = JSON.parse(localStorage.getItem('user'));
+            if (!user) {
+                window.location.href = 'auth.html';
+                return;
+            }
+
+            try {
+                const response = await fetch(`http://localhost:8080/api/user/preferences?userId=${user.userId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(onboardingData)
+                });
+
+                if (response.ok) {
+                    window.location.href = 'index.html';
+                } else {
+                    alert('Eroare la salvarea preferințelor.');
+                }
+            } catch (error) {
+                alert('Eroare de conexiune.');
+            }
+        });
+    </script>
+</body>
+</html>

@@ -2,32 +2,71 @@
 <html lang="ro">
 <head>
     <meta charset="UTF-8">
-    <title>Fitness Tracker AI</title>
+    <title>Fitness Tracker AI - Dashboard</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <script>
+        // Verificare login
+        const user = localStorage.getItem('user');
+        if (!user) {
+            window.location.href = 'auth.html';
+        }
+    </script>
     <div id="grid-pagina">
         <header class="header">
-            <h1>My Fitness AI</h1>
+            <h1>Athletica AI</h1>
+            <div id="user-info" style="float: right; margin-right: 20px;">
+                Salut, <span id="display-username"></span>! 
+                <button id="btn-logout" style="background: #ff4444; border: none; padding: 5px 10px; border-radius: 3px; color: white; cursor: pointer;">Logout</button>
+            </div>
         </header>
         
         <aside class="sidebar">
-            <button>Profilul meu</button>
-            <button>Adaugă Antrenament</button>
+            <button class="active">Profilul meu</button>
+            <button id="btn-show-workout">Adaugă Antrenament</button>
             <button id="btn-predictie">Predicție AI</button>
         </aside>
 
         <main class="content">
-            <div class="card">
-                <h2>Statistici Azi</h2>
-                <p>Calorii arse: <span id="calorii">0</span> kcal</p>
-                <p>Timp activ: 0 min</p>
+            <div class="card" id="ai-advice-card" style="grid-column: span 2; border-color: var(--verde-ai);">
+                <h2>Sfatul AI Zilnic</h2>
+                <p id="ai-summary">Încarcă predicția pentru a vedea recomandarea zilei.</p>
+                <p id="ai-recommendation" style="font-style: italic; color: var(--verde-ai);"></p>
+                <div style="display: flex; gap: 20px; margin-top: 15px;">
+                    <div>VO2 Max: <span id="vo2-val">--</span></div>
+                    <div>Body Battery: <span id="bb-val">--</span>%</div>
+                </div>
             </div>
-            <div class="card" style="border-color: #00ff88;">
-                <h2>Predicție AI (Progres 30 zile)</h2>
-                <p id="predictie-text">Aștept datele din modulul Python...</p>
+
+            <!-- Modal Antrenament (Ascuns implicit) -->
+            <div id="workout-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:100; align-items:center; justify-content:center;">
+                <div class="card" style="max-width:400px; width:90%; background:#1a1a1a;">
+                    <h2>Înregistrează Antrenament</h2>
+                    <form id="workout-form">
+                        <div style="margin-bottom:15px;">
+                            <label>Tip (ex: CrossFit, Alergare)</label>
+                            <input type="text" id="w-type" style="width:100%; background:#222; border:1px solid #333; color:white; padding:10px;" required>
+                        </div>
+                        <div style="margin-bottom:15px;">
+                            <label>Durată (minute)</label>
+                            <input type="number" id="w-duration" style="width:100%; background:#222; border:1px solid #333; color:white; padding:10px;" required>
+                        </div>
+                        <div style="margin-bottom:15px;">
+                            <label>Intensitate</label>
+                            <select id="w-intensity" style="width:100%; background:#222; border:1px solid #333; color:white; padding:10px;">
+                                <option value="Low">Mică (Recuperare)</option>
+                                <option value="Medium">Medie (Anduranță)</option>
+                                <option value="High">Mare (HIIT/WOD)</option>
+                            </select>
+                        </div>
+                        <div style="display:flex; gap:10px;">
+                            <button type="submit" style="flex:1; background:var(--verde-ai); color:black; font-weight:bold; padding:10px;">Salvează</button>
+                            <button type="button" id="btn-close-workout" style="flex:1; background:#333; color:white; padding:10px;">Anulează</button>
+                        </div>
+                    </form>
+                </div>
             </div>
-        </main>
     </div>
     <script src="script.js"></script>
 </body>

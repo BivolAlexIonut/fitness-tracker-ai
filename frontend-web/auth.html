@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Athletica AI - Autentificare</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background: radial-gradient(circle at center, #1a1a1a 0%, #050505 100%);
+            margin: 0;
+        }
+        .auth-card {
+            width: 100%;
+            max-width: 450px;
+            background: rgba(30, 30, 30, 0.9);
+            padding: 40px;
+            border-radius: 15px;
+            border: 1px solid rgba(0, 255, 136, 0.1);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
+        }
+        .brand-logo {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .brand-logo h1 {
+            color: var(--verde-ai);
+            font-size: 2rem;
+            margin: 0;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+        .auth-toggle {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            background: #252525;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            padding: 4px;
+        }
+        .auth-toggle button {
+            background: none;
+            border: none;
+            color: #aaa;
+            padding: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: 0.3s;
+            border-radius: 6px;
+        }
+        .auth-toggle button.active {
+            background: var(--verde-ai);
+            color: #000;
+        }
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            font-size: 0.8rem;
+            color: #888;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        input, select {
+            width: 100%;
+            padding: 12px;
+            background: #2a2a2a;
+            border: 1px solid #333;
+            border-radius: 6px;
+            color: #fff;
+            box-sizing: border-box;
+            transition: border-color 0.3s;
+        }
+        input:focus {
+            outline: none;
+            border-color: var(--verde-ai);
+        }
+        button[type="submit"] {
+            width: 100%;
+            padding: 14px;
+            background: var(--verde-ai);
+            border: none;
+            border-radius: 6px;
+            color: #000;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        button[type="submit"]:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 255, 136, 0.3);
+        }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+    <div class="auth-card">
+        <div class="brand-logo">
+            <h1>Athletica AI</h1>
+        </div>
+        
+        <div class="auth-toggle">
+            <button id="toggle-login" class="active">LOGIN</button>
+            <button id="toggle-register">SIGN UP</button>
+        </div>
+
+        <form id="login-form">
+            <div class="form-group">
+                <label>Email Address</label>
+                <input type="email" id="login-email" placeholder="nume@exemplu.com" required>
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="login-password" placeholder="••••••••" required>
+            </div>
+            <button type="submit">AUTENTIFICARE</button>
+        </form>
+
+        <form id="register-form" class="hidden">
+            <div class="form-group">
+                <label>Username</label>
+                <input type="text" id="reg-username" required>
+            </div>
+            <div class="form-group">
+                <label>Email Address</label>
+                <input type="email" id="reg-email" required>
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="reg-password" required>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Înălțime (cm)</label>
+                    <input type="number" id="reg-height" placeholder="180" required>
+                </div>
+                <div class="form-group">
+                    <label>Greutate (kg)</label>
+                    <input type="number" step="0.1" id="reg-weight" placeholder="75.5" required>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Vârstă</label>
+                    <input type="number" id="reg-age" placeholder="25" required>
+                </div>
+                <div class="form-group">
+                    <label>Sex</label>
+                    <select id="reg-gender">
+                        <option value="Male">Masculin</option>
+                        <option value="Female">Feminin</option>
+                        <option value="Other">Altul</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>HR Repaus</label>
+                    <input type="number" id="reg-hr-rest" placeholder="60" required>
+                </div>
+                <div class="form-group">
+                    <label>HR Max</label>
+                    <input type="number" id="reg-hr-max" placeholder="190" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Nivel Activitate</label>
+                <select id="reg-activity">
+                    <option value="Sedentary">Sedentar</option>
+                    <option value="Lightly Active">Activitate Ușoară</option>
+                    <option value="Moderately Active">Moderat Activ</option>
+                    <option value="Very Active">Foarte Activ</option>
+                    <option value="Extra Active">Extra Activ</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Greutate Țintă (kg)</label>
+                <input type="number" step="0.1" id="reg-target-weight" placeholder="70.0" required>
+            </div>
+
+            <button type="submit">CREEAZĂ CONT</button>
+        </form>
+    </div>
+
+    <script>
+        const loginForm = document.getElementById('login-form');
+        const registerForm = document.getElementById('register-form');
+        const toggleLogin = document.getElementById('toggle-login');
+        const toggleRegister = document.getElementById('toggle-register');
+
+        toggleLogin.addEventListener('click', () => {
+            loginForm.classList.remove('hidden');
+            registerForm.classList.add('hidden');
+            toggleLogin.classList.add('active');
+            toggleRegister.classList.remove('active');
+        });
+
+        toggleRegister.addEventListener('click', () => {
+            registerForm.classList.remove('hidden');
+            loginForm.classList.add('hidden');
+            toggleRegister.classList.add('active');
+            toggleLogin.classList.remove('active');
+        });
+
+        registerForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const data = {
+                username: document.getElementById('reg-username').value,
+                email: document.getElementById('reg-email').value,
+                password: document.getElementById('reg-password').value,
+                height: parseFloat(document.getElementById('reg-height').value),
+                currentWeight: parseFloat(document.getElementById('reg-weight').value),
+                targetWeight: parseFloat(document.getElementById('reg-target-weight').value),
+                age: parseInt(document.getElementById('reg-age').value),
+                gender: document.getElementById('reg-gender').value,
+                restingHeartRate: parseInt(document.getElementById('reg-hr-rest').value),
+                maxHeartRate: parseInt(document.getElementById('reg-hr-max').value),
+                activityLevel: document.getElementById('reg-activity').value
+            };
+
+            try {
+                const response = await fetch('http://localhost:8080/api/auth/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                if (response.ok) { 
+                    alert('Înregistrare reușită! Acum completează-ți profilul.'); 
+                    // Simulăm un login automat sau trimitem la login
+                    toggleLogin.click(); 
+                }
+                else { alert('Eroare: ' + await response.text()); }
+            } catch (error) { alert('Eroare de conexiune la server.'); }
+        });
+
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const credentials = {
+                email: document.getElementById('login-email').value,
+                password: document.getElementById('login-password').value
+            };
+            try {
+                const response = await fetch('http://localhost:8080/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(credentials)
+                });
+                if (response.ok) {
+                    const result = await response.json();
+                    localStorage.setItem('user', JSON.stringify(result));
+                    // Redirecționăm către onboarding pentru a colecta restul datelor
+                    window.location.href = 'onboarding.html';
+                } else { alert('Email sau parolă incorectă.'); }
+            } catch (error) { alert('Eroare de conexiune la server.'); }
+        });
+    </script>
+</body>
+</html>
