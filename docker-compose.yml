@@ -19,7 +19,7 @@ services:
     build: ./ai-service-python
     container_name: fitness_ai_python
     ports:
-      - "8000:8000"
+      - "8005:8005"
     depends_on:
       - db
 

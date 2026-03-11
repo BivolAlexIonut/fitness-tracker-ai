@@ -18,7 +18,7 @@ public class AIService {
     @Autowired
     private WorkoutRepository workoutRepository;
 
-    private final String PYTHON_AI_URL = "http://localhost:8000/predict/daily-advice";
+    private final String PYTHON_AI_URL = "http://localhost:8005/predict/daily-advice";
 
     public Map<String, Object> getDailyAdvice(User user) {
         RestTemplate restTemplate = new RestTemplate();
