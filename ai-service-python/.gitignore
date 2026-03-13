@@ -1,0 +1,10 @@
+# Python specific
+venv/
+__pycache__/
+.env
+*.pyc
+.ipynb_checkpoints/
+
+# OS specific
+.DS_Store
+Thumbs.db

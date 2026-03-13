@@ -15,7 +15,7 @@ public class RecoveryLog {
     private Integer painLevel;
     
     @Lob
-    @Column(columnDefinition = "MEDIUMTEXT")
+    @Column(columnDefinition = "LONGTEXT")
     private String protocol; 
     
     private LocalDateTime date;

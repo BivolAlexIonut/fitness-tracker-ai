@@ -26,6 +26,9 @@ public class WorkoutController {
     @Autowired
     private UserRepository userRepository;
 
+    @org.springframework.beans.factory.annotation.Value("${ai.service.url}")
+    private String aiServiceBaseUrl;
+
     @PostMapping("/add")
     public ResponseEntity<?> addWorkout(@RequestParam Long userId, @RequestBody Workout workout) {
         Optional<User> userOpt = userRepository.findById(userId);
@@ -47,13 +50,13 @@ public class WorkoutController {
     public ResponseEntity<?> getPersonalRecords(@RequestParam Long userId) {
         List<Workout> workouts = workoutRepository.findByUserIdOrderByDateDesc(userId);
         
-        String PYTHON_AI_URL = "http://localhost:8005/predict/extract-prs";
+        String url = aiServiceBaseUrl + "/extract-prs";
         Map<String, Object> aiRequest = new HashMap<>();
         aiRequest.put("workouts", workouts);
 
         try {
             RestTemplate restTemplate = new RestTemplate();
-            return ResponseEntity.ok(restTemplate.postForObject(PYTHON_AI_URL, aiRequest, Map.class));
+            return ResponseEntity.ok(restTemplate.postForObject(url, aiRequest, Map.class));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Eroare la extragerea PR-urilor.");
         }

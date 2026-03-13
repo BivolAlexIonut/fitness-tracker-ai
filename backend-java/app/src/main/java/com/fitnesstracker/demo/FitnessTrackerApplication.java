@@ -34,7 +34,7 @@ public class FitnessTrackerApplication {
             try {
                 System.out.println("[JAVA] Inițializare Serviciu AI...");
                 
-                // Închidem orice proces vechi pe portul 8005 (Windows)
+                // Închidem orice proces vechi pe portul 8006 (Windows)
                 if (System.getProperty("os.name").toLowerCase().contains("win")) {
                     Runtime.getRuntime().exec("cmd /c taskkill /F /IM python.exe /T");
                     Thread.sleep(1000);
@@ -52,7 +52,7 @@ public class FitnessTrackerApplication {
                 pb.inheritIO(); 
                 Process process = pb.start();
                 
-                System.out.println("[JAVA] Serviciul AI a pornit pe portul 8005.");
+                System.out.println("[JAVA] Serviciul AI a pornit pe portul 8006.");
 
                 Runtime.getRuntime().addShutdownHook(new Thread(() -> {
                     process.descendants().forEach(ProcessHandle::destroyForcibly);

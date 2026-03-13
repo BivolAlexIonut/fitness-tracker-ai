@@ -32,12 +32,15 @@ public class RecoveryController {
     @Autowired
     private WorkoutRepository workoutRepository;
 
-    private final String PYTHON_AI_URL = "http://localhost:8005/predict/recovery-protocol";
+    @org.springframework.beans.factory.annotation.Value("${ai.service.url}")
+    private String aiServiceBaseUrl;
 
     @PostMapping("/analyze")
     public ResponseEntity<?> analyzeRecovery(@RequestParam Long userId, @RequestBody Map<String, Object> request) {
         Optional<User> userOpt = userRepository.findById(userId);
         if (userOpt.isEmpty()) return ResponseEntity.notFound().build();
+
+        String url = aiServiceBaseUrl + "/recovery-protocol";
 
         // Extragem datele din request-ul primit de la Frontend
         String soreParts = request.get("soreParts") != null ? request.get("soreParts").toString() : "Nespecificat";
@@ -61,7 +64,7 @@ public class RecoveryController {
         try {
             RestTemplate restTemplate = new RestTemplate();
             // Specificăm Map.class pentru a primi JSON-ul ca un dicționar Java
-            Map<String, Object> aiResponse = restTemplate.postForObject(PYTHON_AI_URL, aiRequest, Map.class);
+            Map<String, Object> aiResponse = restTemplate.postForObject(url, aiRequest, Map.class);
 
             if (aiResponse != null && aiResponse.containsKey("protocol")) {
                 RecoveryLog log = new RecoveryLog();

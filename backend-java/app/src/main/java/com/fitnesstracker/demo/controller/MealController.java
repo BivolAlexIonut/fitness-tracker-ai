@@ -26,7 +26,8 @@ public class MealController {
     @Autowired
     private UserRepository userRepository;
 
-    private final String PYTHON_AI_URL = "http://localhost:8005/predict/meal-analysis";
+    @org.springframework.beans.factory.annotation.Value("${ai.service.url}")
+    private String aiServiceBaseUrl;
 
     @PostMapping("/analyze")
     public ResponseEntity<?> analyzeAndSaveMeal(@RequestParam Long userId, @RequestBody Map<String, String> request) {
@@ -35,6 +36,7 @@ public class MealController {
         User user = userOpt.get();
 
         String mealDescription = request.get("description");
+        String url = aiServiceBaseUrl + "/meal-analysis";
 
         Map<String, Object> aiRequest = new HashMap<>();
         aiRequest.put("meal_description", mealDescription);
@@ -47,7 +49,7 @@ public class MealController {
 
         try {
             RestTemplate restTemplate = new RestTemplate();
-            Map<String, Object> aiResponse = restTemplate.postForObject(PYTHON_AI_URL, aiRequest, Map.class);
+            Map<String, Object> aiResponse = restTemplate.postForObject(url, aiRequest, Map.class);
 
             // Verificare defensivă: AI-ul trebuie să returneze un răspuns valid și fără cheia 'error'
             if (aiResponse != null && !aiResponse.containsKey("error") && aiResponse.containsKey("calories")) {

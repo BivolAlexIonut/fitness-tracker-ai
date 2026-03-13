@@ -39,9 +39,16 @@ class WorkoutLog(BaseModel):
     details: Optional[str] = ""
     averageHeartRate: Optional[int] = None
 
+class DailyMetricsLog(BaseModel):
+    date: Optional[str] = ""
+    sleepHours: Optional[float] = 0.0
+    hrv: Optional[int] = 0
+    stressLevel: Optional[int] = 0
+
 class PredictionRequest(BaseModel):
     profile: Optional[UserProfile]
     recent_workouts: Optional[List[WorkoutLog]] = []
+    daily_metrics: Optional[List[DailyMetricsLog]] = []
 
 class MealAnalysisRequest(BaseModel):
     meal_description: str
@@ -145,5 +152,5 @@ async def extract_prs(request: PRRequest):
 
 if __name__ == "__main__":
     import uvicorn
-    # Portul 8005 pentru a corespunde cu setarile din Java
-    uvicorn.run(app, host="0.0.0.0", port=8005)
+    # Portul 8006 pentru a corespunde cu setarile din Java
+    uvicorn.run(app, host="0.0.0.0", port=8006)

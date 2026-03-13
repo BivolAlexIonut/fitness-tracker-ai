@@ -18,5 +18,54 @@ public class DailyMetrics {
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
+    @com.fasterxml.jackson.annotation.JsonIgnore
     private User user;
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public LocalDate getDate() {
+        return date;
+    }
+
+    public void setDate(LocalDate date) {
+        this.date = date;
+    }
+
+    public double getSleepHours() {
+        return sleepHours;
+    }
+
+    public void setSleepHours(double sleepHours) {
+        this.sleepHours = sleepHours;
+    }
+
+    public int getHrv() {
+        return hrv;
+    }
+
+    public void setHrv(int hrv) {
+        this.hrv = hrv;
+    }
+
+    public int getStressLevel() {
+        return stressLevel;
+    }
+
+    public void setStressLevel(int stressLevel) {
+        this.stressLevel = stressLevel;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
 }
