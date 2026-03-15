@@ -5,6 +5,9 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
 import java.io.File;
 
 @SpringBootApplication
@@ -18,13 +21,28 @@ public class FitnessTrackerApplication {
     @Bean
     CommandLineRunner fixDatabase(JdbcTemplate jdbcTemplate) {
         return args -> {
-            try {
-                Thread.sleep(3000);
-                System.out.println("[DB-FIX] Optimizare tabele pentru AI...");
-                jdbcTemplate.execute("ALTER TABLE recovery_logs MODIFY COLUMN protocol LONGTEXT");
-                jdbcTemplate.execute("ALTER TABLE workouts MODIFY COLUMN details LONGTEXT");
-            } catch (Exception e) {
-                System.out.println("[DB-FIX] Tabelele sunt pregătite.");
+            new Thread(() -> {
+                try {
+                    // Așteptăm puțin să se stabilizeze Hibernate
+                    Thread.sleep(5000);
+                    System.out.println("[DB-FIX] Optimizare tabele pentru AI...");
+                    jdbcTemplate.execute("ALTER TABLE recovery_logs MODIFY COLUMN protocol LONGTEXT");
+                    jdbcTemplate.execute("ALTER TABLE workouts MODIFY COLUMN details LONGTEXT");
+                } catch (Exception e) {
+                    System.out.println("[DB-FIX] Tabelele sunt deja configurate corect.");
+                }
+            }).start();
+        };
+    }
+
+    @Bean
+    public WebMvcConfigurer corsConfigurer() {
+        return new WebMvcConfigurer() {
+            @Override
+            public void addCorsMappings(CorsRegistry registry) {
+                registry.addMapping("/**") // Permite toate rutele
+                        .allowedOrigins("http://localhost:3000", "http://localhost:5173") // Porturile standard de React/Vite
+                        .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS");
             }
         };
     }
@@ -33,8 +51,7 @@ public class FitnessTrackerApplication {
         Thread thread = new Thread(() -> {
             try {
                 System.out.println("[JAVA] Inițializare Serviciu AI...");
-                
-                // Închidem orice proces vechi pe portul 8006 (Windows)
+
                 if (System.getProperty("os.name").toLowerCase().contains("win")) {
                     Runtime.getRuntime().exec("cmd /c taskkill /F /IM python.exe /T");
                     Thread.sleep(1000);

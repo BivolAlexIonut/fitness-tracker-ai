@@ -131,18 +131,63 @@ async def call_gemini(prompt, type_key, user="Utilizator"):
 @app.post("/predict/daily-advice")
 async def get_daily_advice(request: PredictionRequest):
     user = request.profile.username if request.profile else "Utilizator"
-    prompt = "Analizeaza efortul meu si ofera sfat detaliat in ROMANA. JSON: summary, recommendation, estimated_vo2_max, body_battery."
+    
+    # Context bogat pentru AI bazat pe datele primite
+    context = f"Utilizator: {user}, Scop: {request.profile.fitnessGoal}, Vârstă: {request.profile.age}\n"
+    context += f"Antrenamente recente: {json.dumps([w.dict() for w in request.recent_workouts], indent=2)}\n"
+    context += f"Metrici sănătate: {json.dumps([m.dict() for m in request.daily_metrics], indent=2)}\n"
+    
+    prompt = f"""
+    Context Date Utilizator:
+    {context}
+
+    Sarcina: Ești un expert în fiziologie sportivă. Analizează datele și oferă un raport detaliat în ROMÂNĂ.
+    1. Compară efortul din antrenamente cu calitatea somnului și HRV-ul.
+    2. Oferă un rezumat (summary) de minim 40-60 cuvinte, foarte specific (ex: 'Deoarece ai avut un antrenament intens de tip {request.recent_workouts[0].type if request.recent_workouts else "cardio"} ieri...').
+    3. Oferă o recomandare clară pentru antrenamentul de azi.
+
+    Răspunde DOAR cu JSON:
+    {{
+      "summary": "text lung aici",
+      "recommendation": "sfat scurt",
+      "estimated_vo2_max": 45.0,
+      "body_battery": 85
+    }}
+    """
     return await call_gemini(prompt, "advice", user)
 
 @app.post("/predict/meal-analysis")
 async def analyze_meal(request: MealAnalysisRequest):
     user = request.profile.username if request.profile else "Utilizator"
-    prompt = f"Analizeaza masa: {request.meal_description}. Ofera JSON: calories, protein, carbs, fats, feedback."
+    prompt = f"""
+    Masa descrisă: {request.meal_description}
+    Profil utilizator: {request.profile.dict() if request.profile else "Standard"}
+    
+    Analizează această masă în contextul fitness-ului.
+    Răspunde DOAR cu JSON:
+    {{
+      "calories": număr,
+      "protein": număr,
+      "carbs": număr,
+      "fats": număr,
+      "feedback": "explicație detaliată în română despre cum ajută această masă la scopul de {request.profile.fitnessGoal if request.profile else "sănătate"}"
+    }}
+    """
     return await call_gemini(prompt, "nutri", user)
 
 @app.post("/predict/recovery-protocol")
 async def recovery_protocol(request: RecoveryRequest):
-    prompt = f"Protocol recuperare pentru {request.sore_parts} (durere {request.pain_level}/10). Ofera JSON: protocol (ca un singur text lung, cu liniuta de la capat daca e nevoie), estimated_recovery."
+    prompt = f"""
+    Durere raportată: {request.sore_parts} (Nivel: {request.pain_level}/10)
+    Antrenamente recente pentru context: {json.dumps([w.dict() for w in request.recent_workouts], indent=2)}
+    
+    Oferă un protocol de recuperare sportivă profesional în ROMÂNĂ.
+    Răspunde DOAR cu JSON:
+    {{
+      "protocol": "listă detaliată de pași, stretching, nutriție, odihnă",
+      "estimated_recovery": "ex: 36 ore"
+    }}
+    """
     return await call_gemini(prompt, "recovery")
 
 @app.post("/predict/extract-prs")

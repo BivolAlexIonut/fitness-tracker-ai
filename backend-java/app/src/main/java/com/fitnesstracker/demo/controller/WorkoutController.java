@@ -42,8 +42,9 @@ public class WorkoutController {
     }
 
     @GetMapping("/history")
-    public List<Workout> getHistory(@RequestParam Long userId) {
-        return workoutRepository.findByUserIdOrderByDateDesc(userId);
+    public ResponseEntity<List<Workout>> getWorkoutHistory(@RequestParam Long userId) {
+        List<Workout> workouts = workoutRepository.findByUserIdOrderByDateDesc(userId);
+        return ResponseEntity.ok(workouts);
     }
 
     @GetMapping("/prs")

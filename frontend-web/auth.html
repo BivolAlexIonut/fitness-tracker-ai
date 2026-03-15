@@ -203,76 +203,82 @@
     </div>
 
     <script>
-        const loginForm = document.getElementById('login-form');
-        const registerForm = document.getElementById('register-form');
-        const toggleLogin = document.getElementById('toggle-login');
-        const toggleRegister = document.getElementById('toggle-register');
+    const loginForm = document.getElementById('login-form');
+    const registerForm = document.getElementById('register-form');
+    const toggleLogin = document.getElementById('toggle-login');
+    const toggleRegister = document.getElementById('toggle-register');
 
-        toggleLogin.addEventListener('click', () => {
-            loginForm.classList.remove('hidden');
-            registerForm.classList.add('hidden');
-            toggleLogin.classList.add('active');
-            toggleRegister.classList.remove('active');
-        });
+    // --- LOGICA DE COMUTARE ÎNTRE TAB-URI ---
+    toggleLogin.addEventListener('click', () => {
+        loginForm.classList.remove('hidden');
+        registerForm.classList.add('hidden');
+        toggleLogin.classList.add('active');
+        toggleRegister.classList.remove('active');
+    });
 
-        toggleRegister.addEventListener('click', () => {
-            registerForm.classList.remove('hidden');
-            loginForm.classList.add('hidden');
-            toggleRegister.classList.add('active');
-            toggleLogin.classList.remove('active');
-        });
+    toggleRegister.addEventListener('click', () => {
+        registerForm.classList.remove('hidden');
+        loginForm.classList.add('hidden');
+        toggleRegister.classList.add('active');
+        toggleLogin.classList.remove('active');
+    });
 
-        registerForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const data = {
-                username: document.getElementById('reg-username').value,
-                email: document.getElementById('reg-email').value,
-                password: document.getElementById('reg-password').value,
-                height: parseFloat(document.getElementById('reg-height').value),
-                currentWeight: parseFloat(document.getElementById('reg-weight').value),
-                targetWeight: parseFloat(document.getElementById('reg-target-weight').value),
-                age: parseInt(document.getElementById('reg-age').value),
-                gender: document.getElementById('reg-gender').value,
-                restingHeartRate: parseInt(document.getElementById('reg-hr-rest').value),
-                maxHeartRate: parseInt(document.getElementById('reg-hr-max').value),
-                activityLevel: document.getElementById('reg-activity').value
-            };
+    // --- 1. ÎNREGISTRARE (REGISTER) ---
+    registerForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const data = {
+            username: document.getElementById('reg-username').value,
+            email: document.getElementById('reg-email').value,
+            password: document.getElementById('reg-password').value,
+            height: parseFloat(document.getElementById('reg-height').value),
+            currentWeight: parseFloat(document.getElementById('reg-weight').value),
+            targetWeight: parseFloat(document.getElementById('reg-target-weight').value),
+            age: parseInt(document.getElementById('reg-age').value),
+            gender: document.getElementById('reg-gender').value,
+            restingHeartRate: parseInt(document.getElementById('reg-hr-rest').value),
+            maxHeartRate: parseInt(document.getElementById('reg-hr-max').value),
+            activityLevel: document.getElementById('reg-activity').value
+        };
 
-            try {
-                const response = await fetch('http://localhost:8080/api/auth/register', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(data)
-                });
-                if (response.ok) { 
-                    alert('Înregistrare reușită! Acum completează-ți profilul.'); 
-                    // Simulăm un login automat sau trimitem la login
-                    toggleLogin.click(); 
-                }
-                else { alert('Eroare: ' + await response.text()); }
-            } catch (error) { alert('Eroare de conexiune la server.'); }
-        });
+        try {
+            const response = await fetch('http://127.0.0.1:8080/api/auth/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            if (response.ok) { 
+                // După înregistrare, îl rugăm să se logheze ca să creăm sesiunea (localStorage)
+                alert('Înregistrare reușită! Te rugăm să te autentifici.'); 
+                toggleLogin.click(); 
+            }
+            else { alert('Eroare: ' + await response.text()); }
+        } catch (error) { alert('Eroare de conexiune la server.'); }
+    });
 
-        loginForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const credentials = {
-                email: document.getElementById('login-email').value,
-                password: document.getElementById('login-password').value
-            };
-            try {
-                const response = await fetch('http://localhost:8080/api/auth/login', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(credentials)
-                });
-                if (response.ok) {
-                    const result = await response.json();
-                    localStorage.setItem('user', JSON.stringify(result));
-                    // Redirecționăm către onboarding pentru a colecta restul datelor
-                    window.location.href = 'onboarding.html';
-                } else { alert('Email sau parolă incorectă.'); }
-            } catch (error) { alert('Eroare de conexiune la server.'); }
-        });
-    </script>
+    // --- 2. AUTENTIFICARE (LOGIN) ---
+    loginForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const credentials = {
+            email: document.getElementById('login-email').value,
+            password: document.getElementById('login-password').value
+        };
+        try {
+            const response = await fetch('http://127.0.0.1:8080/api/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(credentials)
+            });
+            if (response.ok) {
+                const result = await response.json();
+                
+                localStorage.setItem('user', JSON.stringify(result));
+                
+                window.location.href = 'index.html';
+            } else { 
+                alert('Email sau parolă incorectă.'); 
+            }
+        } catch (error) { alert('Eroare de conexiune la server.'); }
+    });
+</script>
 </body>
 </html>

@@ -9,17 +9,92 @@ public class HealthProfile {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private double height; // înălțime în cm
+    private double height; // inaltime în cm
     private double currentWeight; // greutate curentă în kg
     private double targetWeight; // greutate țintă în kg
     private int age;
     private String gender;
-    private int restingHeartRate; // ritm cardiac în repaus
+    private int restingHeartRate; // ritm cardiac iinn repaus
     private int maxHeartRate; // ritm cardiac maxim
     private String activityLevel; // Sedentary, Lightly Active, etc.
     private String fitnessGoal; // Weight Loss, Muscle Gain, Endurance, Maintenance
     private String sportsType; // CrossFit, Running, Swimming, etc.
     private int trainingFrequency; // Days per week
+    private double bodyFatPercentage; // Procentul de grasime
+    private double muscleMass; // Masa musculara in kg
+    private double waistCircumference; // Circumferinta taliei (indicator de sanatate metabolic)
+    private String bloodType;
+    @Column(length = 1000)
+    private String medicalConditions;
+
+    public String getAllergies() {
+        return allergies;
+    }
+
+    public void setAllergies(String allergies) {
+        this.allergies = allergies;
+    }
+
+    public double getBodyFatPercentage() {
+        return bodyFatPercentage;
+    }
+
+    public void setBodyFatPercentage(double bodyFatPercentage) {
+        this.bodyFatPercentage = bodyFatPercentage;
+    }
+
+    public double getMuscleMass() {
+        return muscleMass;
+    }
+
+    public void setMuscleMass(double muscleMass) {
+        this.muscleMass = muscleMass;
+    }
+
+    public double getWaistCircumference() {
+        return waistCircumference;
+    }
+
+    public void setWaistCircumference(double waistCircumference) {
+        this.waistCircumference = waistCircumference;
+    }
+
+    public String getBloodType() {
+        return bloodType;
+    }
+
+    public void setBloodType(String bloodType) {
+        this.bloodType = bloodType;
+    }
+
+    public String getMedicalConditions() {
+        return medicalConditions;
+    }
+
+    public void setMedicalConditions(String medicalConditions) {
+        this.medicalConditions = medicalConditions;
+    }
+
+    public double getBasalMetabolicRate() {
+        return basalMetabolicRate;
+    }
+
+    public void setBasalMetabolicRate(double basalMetabolicRate) {
+        this.basalMetabolicRate = basalMetabolicRate;
+    }
+
+    public double getBmi() {
+        return bmi;
+    }
+
+    public void setBmi(double bmi) {
+        this.bmi = bmi;
+    }
+
+    @Column(length = 500)
+    private String allergies;
+    private double basalMetabolicRate; // BMR - Calorii arse in repaus
+    private double bmi; // Body Mass Index
     @Column(length = 1000)
     private String additionalNotes;
 
