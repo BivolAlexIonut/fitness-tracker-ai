@@ -8,11 +8,9 @@ from pydantic import BaseModel
 from typing import List, Optional
 from dotenv import load_dotenv
 
-# Incarcam variabilele din .env
 load_dotenv()
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
-# Initializare Client Google GenAI (SDK Standard 2026)
 client = None
 if GEMINI_API_KEY:
     try:
@@ -23,8 +21,6 @@ if GEMINI_API_KEY:
         print(f"[ERR] Initializare Gemini: {str(e)}")
 
 app = FastAPI()
-
-# --- MODELE DE DATE (Pydantic) ---
 
 class UserProfile(BaseModel):
     username: Optional[str] = "Utilizator"
@@ -62,8 +58,6 @@ class RecoveryRequest(BaseModel):
 class PRRequest(BaseModel):
     workouts: List[WorkoutLog]
 
-# --- LOGICA DE REZERVA (Fallback) ---
-
 def get_demo_response(type_key, user="Utilizator"):
     if "nutri" in type_key:
         return {"calories": 450, "protein": 30, "carbs": 50, "fats": 12, "feedback": f"Mod Demo: Masa lui {user} pare echilibrata."}
@@ -75,8 +69,6 @@ def get_demo_response(type_key, user="Utilizator"):
         "estimated_vo2_max": 44.0,
         "body_battery": 80
     }
-
-# --- APELUL CATRE AI ---
 
 async def call_gemini(prompt, type_key, user="Utilizator"):
     if not client: 
@@ -102,7 +94,6 @@ async def call_gemini(prompt, type_key, user="Utilizator"):
             
             if response and response.text:
                 text = response.text
-                # Curatam textul pentru a extrage doar JSON-ul
                 match = re.search(r'\{.*\}', text, re.DOTALL)
                 if match:
                     res = json.loads(match.group(0))
@@ -113,17 +104,14 @@ async def call_gemini(prompt, type_key, user="Utilizator"):
             error_msg = str(e)
             print(f"[ERR] {model_name} a esuat: {error_msg[:100]}...")
             
-            # Daca e eroare de limita (429), facem o scurta pauza si incercam urmatorul model
             if "429" in error_msg or "RESOURCE_EXHAUSTED" in error_msg:
                 print("[WARN] Cota atinsa pentru acest model. Incercam urmatorul...")
                 time.sleep(1)
                 continue
             
-            # Daca e 404, trecem direct la urmatorul
             if "404" in error_msg:
                 continue
-                
-    # Daca niciun model nu a mers, dam raspunsul demo
+ 
     print("[FINAL] Toate modelele au esuat sau cota e plina. Trimitem date Demo.")
     return get_demo_response(type_key, user)
 
@@ -179,7 +167,7 @@ async def analyze_meal(request: MealAnalysisRequest):
 async def recovery_protocol(request: RecoveryRequest):
     prompt = f"""
     Durere raportată: {request.sore_parts} (Nivel: {request.pain_level}/10)
-    Antrenamente recente pentru context: {json.dumps([w.dict() for w in request.recent_workouts], indent=2)}
+    Profil utilizator: {request.profile.model_dump() if request.profile else "Standard"}
     
     Oferă un protocol de recuperare sportivă profesional în ROMÂNĂ.
     Răspunde DOAR cu JSON:
@@ -197,5 +185,4 @@ async def extract_prs(request: PRRequest):
 
 if __name__ == "__main__":
     import uvicorn
-    # Portul 8006 pentru a corespunde cu setarile din Java
     uvicorn.run(app, host="0.0.0.0", port=8006)
