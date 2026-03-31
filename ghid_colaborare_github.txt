@@ -1,0 +1,91 @@
+================================================================================
+          GHID DE COLABORARE PE GITHUB - ECHIPA ATHLETICA AI
+================================================================================
+
+Acest document descrie fluxul de lucru (workflow) recomandat pentru a lucra
+eficient in echipa de 3 persoane, evitand conflictele de cod si pastrand
+proiectul organizat pentru materia Metode de Dezvoltare Software.
+
+1. REGULA DE AUR: NU LUCRARE PE 'MAIN'
+--------------------------------------
+Branch-ul `main` trebuie sa contina doar cod functional (care "ruleaza").
+Orice schimbare (functie noua, reparare bug) se face pe un branch separat.
+
+2. STRATEGIA DE BRANCHING (Feature Branching)
+---------------------------------------------
+Inainte de a incepe un task, creati un branch cu un nume sugestiv:
+*   `feature/autentificare-frontend`
+*   `feature/api-antrenamente-java`
+*   `feature/integrare-gemini-python`
+*   `bugfix/reparare-conexiune-db`
+
+3. FLUXUL ZILNIC DE LUCRU (Workflow)
+------------------------------------
+
+Pasul 1: Sincronizarea locala
+Inainte de a incepe lucrul, asigura-te ca ai ultima versiune de pe server:
+   git checkout main
+   git pull origin main
+
+Pasul 2: Crearea branch-ului pentru task-ul tau
+   git checkout -b feature/nume-task-ul-meu
+
+Pasul 3: Lucrul efectiv si commit-uri
+Fai schimbari in cod si salveaza-le des (commit-uri mici):
+   git add .
+   git commit -m "Mesaj clar despre ce ai facut (ex: Adaugat validare email)"
+
+Pasul 4: Urcarea branch-ului pe GitHub
+   git push origin feature/nume-task-ul-meu
+
+Pasul 5: Pull Request (PR) pe GitHub
+- Mergi pe pagina proiectului de pe GitHub.
+- Vei vedea un buton "Compare & pull request". Apasa-l.
+- Descrie ce ai facut si cere parerea colegilor (Review).
+- Colegii trebuie sa verifice codul si sa dea "Approve".
+
+Pasul 6: Merge si Curatenie
+Dupa ce PR-ul este aprobat, apasa "Merge pull request" pe GitHub.
+Dupa merge, poti sterge branch-ul si local:
+   git checkout main
+   git pull origin main
+   git branch -d feature/nume-task-ul-meu
+
+4. GESTIONAREA CONFLICTELOR (Merge Conflicts)
+---------------------------------------------
+Conflictele apar cand doi colegi modifica aceeasi linie in acelasi fisier.
+Cum le rezolvi:
+1. Git te va anunta ca exista un conflict.
+2. Deschide fisierul conflictual in VS Code. Vei vedea marcaje (<<<< HEAD ... ==== ... >>>>).
+3. Alege varianta corecta (Accept Current Change / Accept Incoming / ambele).
+4. Salveaza, fa `git add .` si `git commit -m "Rezolvat conflict"`.
+
+5. SFATURI PENTRU METODE DE DEZVOLTARE SOFTWARE (MDS)
+-----------------------------------------------------
+Pentru a lua nota maxima, folositi instrumentele de management ale GitHub:
+
+A. GITHUB ISSUES:
+   - Creati un "Issue" pentru fiecare task.
+   - Atribuiti (Assign) persoana responsabila.
+   - Cand faceti un commit, puteti scrie "Closes #1" (unde 1 e nr. issue-ului)
+     pentru a-l inchide automat.
+
+B. GITHUB PROJECTS (Kanban Board):
+   - Folositi tab-ul "Projects" de pe GitHub.
+   - Mutati task-urile prin coloanele: "Todo" -> "In Progress" -> "Done".
+   - Acest lucru demonstreaza ca folositi o metodologie (ex: Scrum sau Kanban).
+
+C. CODE REVIEW:
+   - Nu dati "Merge" singuri la propriile Pull Request-uri.
+   - Lasati cel putin un alt coleg sa verifice codul si sa dea "Approve".
+
+6. FISIERE CARE NU TREBUIE SA AJUNGA PE GITHUB
+----------------------------------------------
+Asigurati-va ca aveti un fisier `.gitignore` corect. NU urcati pe GitHub:
+- Folderul `target/` sau `.idea/` de la Java.
+- Folderul `__pycache__` sau `.env` de la Python.
+- Parolele personale ale bazei de date.
+
+================================================================================
+SUCCES CU PROIECTUL!
+================================================================================
