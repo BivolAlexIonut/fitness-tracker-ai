@@ -6,6 +6,39 @@
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* Stil izolat pentru secțiunea PR - rezolvă problema vizibilității textului */
+        .card-pr {
+            background-color: #f8f9fa !important; /* Fundal deschis */
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid #ddd;
+        }
+
+        /* Forțăm textul să fie NEGRU doar în interiorul cardurilor de PR */
+        .card-pr h3 {
+            color: #1a1a1a !important;
+            margin: 10px 0 0 0;
+            font-size: 1.8rem;
+            font-weight: bold;
+        }
+
+        .card-pr small {
+            color: #555555 !important;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Fundal alb pentru grafic ca să fie lizibil pe tema dark */
+        #pr-chart {
+            background-color: white;
+            border-radius: 8px;
+            padding: 10px;
+            margin-top: 20px;
+        }
+    </style>
 </head>
 <body>
 <script>if (!localStorage.getItem('user')) window.location.href = 'auth.html';</script>
@@ -74,16 +107,16 @@
                 <button id="btn-save-pr" class="btn-primary" style="margin-top:15px">Salvează PR</button>
 
                 <div class="stats-grid" style="display:grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px;">
-                    <div class="card" style="background:#f8f9fa">
+                    <div class="card card-pr">
                         <small>1RM Estimat (Relativ)</small>
                         <h3 id="display-1rm">-- kg</h3>
                     </div>
-                    <div class="card" style="background:#f8f9fa">
+                    <div class="card card-pr">
                         <small>Target AI (Grad 2)</small>
                         <h3 id="display-next">-- kg</h3>
                     </div>
                 </div>
-                <canvas id="pr-chart" style="margin-top:20px; max-height: 300px;"></canvas>
+                <canvas id="pr-chart" style="max-height: 300px;"></canvas>
             </div>
         </div>
 
