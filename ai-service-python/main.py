@@ -122,8 +122,8 @@ async def get_daily_advice(request: PredictionRequest):
     
     # Context bogat pentru AI bazat pe datele primite
     context = f"Utilizator: {user}, Scop: {request.profile.fitnessGoal}, Vârstă: {request.profile.age}\n"
-    context += f"Antrenamente recente: {json.dumps([w.dict() for w in request.recent_workouts], indent=2)}\n"
-    context += f"Metrici sănătate: {json.dumps([m.dict() for m in request.daily_metrics], indent=2)}\n"
+    context += f"Antrenamente recente: {json.dumps([w.model_dump() for w in request.recent_workouts], indent=2)}\n"
+    context += f"Metrici sănătate: {json.dumps([m.model_dump() for m in request.daily_metrics], indent=2)}\n"
     
     prompt = f"""
     Context Date Utilizator:
