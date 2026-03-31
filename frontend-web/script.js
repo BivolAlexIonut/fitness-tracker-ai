@@ -198,8 +198,65 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     }
 
-    // --- 6. ALTE FUNCȚIONALITĂȚI (Nutriție, Recuperare, Metricii) ---
-    
+    const btnSaveHealth = document.getElementById('btn-save-health');
+    if (btnSaveHealth) {
+        btnSaveHealth.onclick = async () => {
+            console.log("Salvare metrici inițiată...");
+
+            const elHrv = document.getElementById('h-hrv');
+            const elSleep = document.getElementById('h-sleep');
+            const elStress = document.getElementById('h-stress');
+            const elRhr = document.getElementById('h-rhr');
+
+            if (!elHrv || !elSleep || !elStress || !elRhr) {
+                alert("Eroare în HTML: ID-urile câmpurilor nu se potrivesc!");
+                return;
+            }
+
+            const hData = {
+                hrv: parseInt(elHrv.value) || 0,
+                sleepHours: parseFloat(elSleep.value) || 0,
+                stressLevel: parseInt(elStress.value) || 0,
+                morningRestingHeartRate: parseInt(elRhr.value) || 0,
+                date: new Date().toISOString().split('T')[0]
+            };
+
+            if (hData.hrv === 0 && hData.sleepHours === 0 && hData.stressLevel === 0 && hData.morningRestingHeartRate === 0) {
+                alert("Te rog să completezi cel puțin o valoare (ex: Ore Somn).");
+                return;
+            }
+
+            btnSaveHealth.innerText = "Se salvează...";
+            btnSaveHealth.disabled = true;
+
+            try {
+                const res = await fetch(`${API_BASE}/metrics/add/${user.id}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(hData)
+                });
+                
+                if (res.ok) {
+                    alert("Metricile de sănătate au fost salvate cu succes!");
+                    // Curățăm câmpurile după salvare
+                    elHrv.value = '';
+                    elSleep.value = '';
+                    elStress.value = '';
+                    elRhr.value = '';
+                } else {
+                    const errText = await res.text();
+                    alert("Serverul a refuzat datele: " + errText);
+                }
+            } catch (e) { 
+                console.error("Eroare de rețea la metrici:", e);
+                alert("Eroare de conexiune cu serverul."); 
+            } finally { 
+                btnSaveHealth.innerText = "Salvează Metricile"; 
+                btnSaveHealth.disabled = false;
+            }
+        };
+    }
+
     // Analiză Nutriție
     const btnAnalyzeMeal = document.getElementById('btn-analyze-meal');
     if (btnAnalyzeMeal) {
