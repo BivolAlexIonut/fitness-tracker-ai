@@ -7,16 +7,16 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        /* Stil izolat pentru secțiunea PR - rezolvă problema vizibilității textului */
+        /* Stil izolat pentru secțiunea PR */
         .card-pr {
-            background-color: #f8f9fa !important; /* Fundal deschis */
+            background-color: #f8f9fa !important; /* Fundal deschis pentru contrast */
             padding: 20px;
             border-radius: 12px;
             text-align: center;
             border: 1px solid #ddd;
         }
 
-        /* Forțăm textul să fie NEGRU doar în interiorul cardurilor de PR */
+        /* Text negru DOAR în cardurile de PR */
         .card-pr h3 {
             color: #1a1a1a !important;
             margin: 10px 0 0 0;
@@ -31,12 +31,13 @@
             letter-spacing: 0.5px;
         }
 
-        /* Fundal alb pentru grafic ca să fie lizibil pe tema dark */
+        /* MODIFICARE: Fundal NEGRU pentru grafic */
         #pr-chart {
-            background-color: white;
-            border-radius: 8px;
-            padding: 10px;
+            background-color: #111111; /* Negru intens */
+            border-radius: 12px;
+            padding: 15px;
             margin-top: 20px;
+            border: 1px solid #333; /* Bordură discretă */
         }
     </style>
 </head>
