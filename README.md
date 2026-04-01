@@ -1,104 +1,63 @@
-# 🏋️‍♂️ Fitness Tracker AI (Athletica AI) - Documentație Completă
+# 🏋️‍♂️ Athletica AI - Your Intelligent Fitness Companion
 
-Acesta este un proiect complex de monitorizare a fitness-ului și sănătății, care utilizează Inteligența Artificială pentru a oferi utilizatorilor recomandări personalizate, analize nutriționale și planuri de recuperare.
-
----
-
-## 🎯 Scopul Proiectului
-Scopul acestei aplicații este de a transforma datele brute despre antrenamente și nutriție în informații acționabile. Prin integrarea modelelor de limbaj mari (Google Gemini), aplicația acționează ca un antrenor personal digital care:
-*   Analizează progresul în timp real.
-*   Oferă feedback nutrițional detaliat bazat pe descrieri textuale.
-*   Generează protocoale de recuperare în funcție de durerile musculare raportate.
-*   Extrage recorduri personale (PR) din istoricul de antrenamente.
+Athletica AI este o aplicație full-stack modernă concepută pentru monitorizarea performanței fizice, a stării de sănătate și oferirea de recomandări personalizate prin intermediul Inteligenței Artificiale (Google Gemini). Proiectul a fost dezvoltat ca parte a disciplinei **Metode de Dezvoltare Software**.
 
 ---
 
-## 🏗️ Arhitectura Sistemului
+## 🌟 Caracteristici Principale
 
-Proiectul este împărțit în trei mari componente care comunică între ele:
+### 📊 Analiză avansată a Recordurilor Personale (PR)
+*   **Monitorizare Evoluție:** Urmărirea progresului pentru peste 15 exerciții fundamentale și olimpice (Snatch, Clean and Jerk, Squat, Deadlift, etc.).
+*   **AI 1RM Estimation:** Calcularea automată a "One Rep Max" folosind formula Epley, optimizată chiar și pentru recorduri de o singură repetiție.
+*   **Predicții Trend:** Analiză bazată pe regresie polinomială pentru a estima performanțele viitoare și a seta obiective realiste.
 
-1.  **Backend (Java Spring Boot):** 
-    *   Gestionează logica de business, autentificarea și securitatea.
-    *   Administrează baza de date MySQL prin Hibernate ORM.
-    *   Expune API-uri REST pentru frontend și comunică cu serviciul de AI.
-2.  **AI Service (Python FastAPI):**
-    *   Interfața cu modelele Google Gemini (Flash 2.0 / Pro).
-    *   Procesează datele de fitness și returnează răspunsuri structurate JSON.
-    *   Include un mod "Demo" (fallback) în cazul în care API Key-ul lipsește.
-3.  **Frontend (Web Static):**
-    *   Interfață curată construită cu HTML5, CSS3 și JavaScript (Vanilla).
-    *   Comunică direct cu backend-ul pentru afișarea datelor.
-4.  **Baza de Date (MySQL):**
-    *   Stochează profilul utilizatorului, jurnalele de masă, antrenamentele și metricile zilnice.
+### 🧠 Inteligență Artificială Integrată (Gemini)
+*   **Daily AI Coach:** Analizează metricile de sănătate și antrenamentele recente pentru a oferi un sfat personalizat în fiecare dimineață.
+*   **Nutri-Coach AI:** Introduci ce ai mâncat în format text, iar AI-ul estimează caloriile, macronutrienții și oferă feedback nutrițional.
+*   **Protocol de Recuperare:** Raportezi zonele cu febra musculară sau dureri, iar sistemul generează un plan de stretching și recuperare personalizat.
+
+### 📈 Monitorizare Sănătate și Activitate
+*   **Metrici Zilnice:** Înregistrarea HRV (Heart Rate Variability), orelor de somn, nivelului de stres și pulsului de repaus.
+*   **Istoric Antrenamente:** Jurnal detaliat al activităților fizice (tip, durată, intensitate, calorii arse).
 
 ---
 
-## 🛠️ Instrucțiuni de Instalare (Setup)
+## 🛠️ Arhitectură Tehnică
 
-Urmați acești pași pentru a configura proiectul pe un calculator nou după `git clone`.
+Proiectul este împărțit în trei componente principale care comunică între ele:
 
-### 1. Cerințe Prealabile
-Asigurați-vă că aveți instalate următoarele:
-*   **Docker Desktop** (pentru baza de date).
-*   **Java JDK 17** sau mai nou.
-*   **Python 3.10+**.
-*   **Maven** (sau folosiți wrapper-ul `mvnw`).
-*   **Un API Key Google Gemini** (opțional, dar recomandat).
+1.  **Frontend (Web):** Interfață modernă construită cu **HTML5, CSS3 și JavaScript (Vanilla)**. Folosește Chart.js pentru vizualizarea graficelor de progres.
+2.  **Backend (Java):** Construit cu **Spring Boot**, gestionează logica de business, autentificarea și stocarea datelor în **MySQL**.
+3.  **AI Service (Python):** Motorul de inteligență artificială bazat pe **FastAPI** și **Google Gemini API**. Se ocupă de calculele matematice complexe și procesarea limbajului natural.
 
-### 2. Configurarea Bazei de Date (Docker)
-Porniți containerul de MySQL folosind fișierul `docker-compose.yml` aflat în rădăcina proiectului:
+---
+
+## 🚀 Instalare și Configurare
+
+### 1. Baza de Date (MySQL)
+*   Creați o bază de date numită `fitness_app_db`.
+*   Configurați conexiunea în `backend-java/app/src/main/resources/application.properties`.
+
+### 2. AI Service (Python)
 ```bash
-docker-compose up -d
+cd ai-service-python
+pip install -r requirements.txt
+# Adăugați cheia GEMINI_API_KEY în fișierul .env
+python main.py
 ```
-*Acest lucru va porni o bază de date MySQL pe portul 3306 cu numele `fitness_app_db`.*
 
-### 3. Configurarea Serviciului de AI (Python)
-1. Intrați în folderul dedicat:
-   ```bash
-   cd ai-service-python
-   ```
-2. Creați un mediu virtual și instalați dependențele:
-   ```bash
-   python -m venv venv
-   source venv/bin/activate  # Pe Windows: venv\Scripts\activate
-   pip install -r requirements.txt
-   ```
-3. (Opțional) Creați un fișier `.env` în acest folder și adăugați cheia API:
-   ```env
-   GEMINI_API_KEY=cheia_ta_aici
-   ```
-4. Porniți serviciul:
-   ```bash
-   python main.py
-   ```
-   *Serviciul va rula pe http://localhost:8005.*
+### 3. Backend (Java)
+```bash
+cd backend-java/app
+mvn clean install
+mvn spring-boot:run
+```
 
-### 4. Configurarea Backend-ului (Java)
-1. Intrați în folderul backend:
-   ```bash
-   cd backend-java/app
-   ```
-2. Verificați setările bazei de date în `src/main/resources/application.properties` (implicit sunt setate pentru Docker).
-3. Construiți și porniți aplicația:
-   ```bash
-   ./mvnw spring-boot:run
-   ```
-   *Backend-ul va rula pe http://localhost:8080.*
-
-### 5. Accesarea Interfeței (Frontend)
-Nu este nevoie de un server de build (ca la React). 
-1. Navigați în folderul `frontend-web/`.
-2. Deschideți fișierul `auth.html` sau `index.html` direct în browser (sau folosiți extensia "Live Server" din VS Code).
+### 4. Frontend
+*   Deschideți `frontend-web/auth.html` într-un browser (recomandat folosind Live Server).
 
 ---
 
-## 🚀 Utilizare Rapidă
-*   **Înregistrare:** Creați un cont în pagina de Auth.
-*   **Onboarding:** Completați profilul fizic (vârstă, greutate, scop).
-*   **Analiză AI:** Adăugați un antrenament sau o masă, apoi mergeți la "AI Insights" pentru a primi sfaturi personalizate.
-
----
-
-## 📝 Note Tehnice
-*   **Porturi:** MySQL (3306), Java (8080), Python (8005).
-*   **Fallback AI:** Dacă nu aveți o cheie Gemini, serviciul Python va returna date "Demo" predefinite pentru a permite testarea interfeței.
+## 👥 Echipa și Context
+Proiect realizat pentru laboratorul de **Metode de Dezvoltare Software**. 
+Aplicația pune accent pe integrarea serviciilor distribuite și utilizarea algoritmilor de AI pentru îmbunătățirea experienței utilizatorului în domeniul fitness-ului.
