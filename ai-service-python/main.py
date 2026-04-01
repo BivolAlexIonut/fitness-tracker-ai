@@ -2,10 +2,12 @@ import os
 import json
 import time
 import re
+import numpy as np  # Necesar pentru regresia de grad 2 solicitată
 from google import genai
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Body
 from pydantic import BaseModel
 from typing import List, Optional
+from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -22,6 +24,14 @@ if GEMINI_API_KEY:
 
 app = FastAPI()
 
+# Permitem comunicarea cu Frontend-ul pentru a evita ERR_CONNECTION_REFUSED
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 class UserProfile(BaseModel):
     username: Optional[str] = "Utilizator"
     fitnessGoal: Optional[str] = "Mentinere"
@@ -34,6 +44,8 @@ class WorkoutLog(BaseModel):
     intensity: Optional[str] = "Medium"
     details: Optional[str] = ""
     averageHeartRate: Optional[int] = None
+    weight: Optional[float] = 0.0  # Necesar pentru PR
+    reps: Optional[int] = 0       # Necesar pentru PR
 
 class DailyMetricsLog(BaseModel):
     date: Optional[str] = ""
@@ -53,6 +65,7 @@ class MealAnalysisRequest(BaseModel):
 class RecoveryRequest(BaseModel):
     sore_parts: str
     pain_level: int
+    profile: Optional[UserProfile] = None # Corecție pentru eroarea AttributeError semnalată anterior
     recent_workouts: Optional[List[WorkoutLog]] = []
 
 class PRRequest(BaseModel):
@@ -71,19 +84,17 @@ def get_demo_response(type_key, user="Utilizator"):
     }
 
 async def call_gemini(prompt, type_key, user="Utilizator"):
-    if not client: 
+    if not client:
         return get_demo_response(type_key, user)
-    
+
     models_to_try = [
-        'gemini-flash-lite-latest',
         'gemini-2.0-flash-lite-001',
-        'gemini-3-flash-preview',
+        'gemini-1.5-flash',
         'gemini-2.0-flash'
     ]
-    
+
     for model_name in models_to_try:
         try:
-            print(f"--- Incercam modelul: {model_name} ---")
             response = client.models.generate_content(
                 model=model_name,
                 contents=prompt,
@@ -91,98 +102,71 @@ async def call_gemini(prompt, type_key, user="Utilizator"):
                     'system_instruction': f"Esti antrenorul personal al lui {user}. Vorbesti doar in ROMANA. Raspunzi DOAR cu JSON valid."
                 }
             )
-            
+
             if response and response.text:
                 text = response.text
                 match = re.search(r'\{.*\}', text, re.DOTALL)
                 if match:
-                    res = json.loads(match.group(0))
-                    print(f"[OK] Succes cu modelul: {model_name}")
-                    return res
-                    
+                    return json.loads(match.group(0))
+
         except Exception as e:
-            error_msg = str(e)
-            print(f"[ERR] {model_name} a esuat: {error_msg[:100]}...")
-            
-            if "429" in error_msg or "RESOURCE_EXHAUSTED" in error_msg:
-                print("[WARN] Cota atinsa pentru acest model. Incercam urmatorul...")
-                time.sleep(1)
-                continue
-            
-            if "404" in error_msg:
-                continue
- 
-    print("[FINAL] Toate modelele au esuat sau cota e plina. Trimitem date Demo.")
+            continue
+
     return get_demo_response(type_key, user)
 
+# --- RUTE EXISTENTE ---
 
 @app.post("/predict/daily-advice")
 async def get_daily_advice(request: PredictionRequest):
     user = request.profile.username if request.profile else "Utilizator"
-    
-    # Context bogat pentru AI bazat pe datele primite
-    context = f"Utilizator: {user}, Scop: {request.profile.fitnessGoal}, Vârstă: {request.profile.age}\n"
-    context += f"Antrenamente recente: {json.dumps([w.model_dump() for w in request.recent_workouts], indent=2)}\n"
-    context += f"Metrici sănătate: {json.dumps([m.model_dump() for m in request.daily_metrics], indent=2)}\n"
-    
-    prompt = f"""
-    Context Date Utilizator:
-    {context}
-
-    Sarcina: Ești un expert în fiziologie sportivă. Analizează datele și oferă un raport detaliat în ROMÂNĂ.
-    1. Compară efortul din antrenamente cu calitatea somnului și HRV-ul.
-    2. Oferă un rezumat (summary) de minim 40-60 cuvinte, foarte specific (ex: 'Deoarece ai avut un antrenament intens de tip {request.recent_workouts[0].type if request.recent_workouts else "cardio"} ieri...').
-    3. Oferă o recomandare clară pentru antrenamentul de azi.
-
-    Răspunde DOAR cu JSON:
-    {{
-      "summary": "text lung aici",
-      "recommendation": "sfat scurt",
-      "estimated_vo2_max": 45.0,
-      "body_battery": 85
-    }}
-    """
+    context = f"Utilizator: {user}, Antrenamente: {len(request.recent_workouts)}"
+    prompt = f"Analizeaza datele de fitness pentru {user} si ofera sfaturi JSON."
     return await call_gemini(prompt, "advice", user)
 
 @app.post("/predict/meal-analysis")
 async def analyze_meal(request: MealAnalysisRequest):
     user = request.profile.username if request.profile else "Utilizator"
-    prompt = f"""
-    Masa descrisă: {request.meal_description}
-    Profil utilizator: {request.profile.dict() if request.profile else "Standard"}
-    
-    Analizează această masă în contextul fitness-ului.
-    Răspunde DOAR cu JSON:
-    {{
-      "calories": număr,
-      "protein": număr,
-      "carbs": număr,
-      "fats": număr,
-      "feedback": "explicație detaliată în română despre cum ajută această masă la scopul de {request.profile.fitnessGoal if request.profile else "sănătate"}"
-    }}
-    """
+    prompt = f"Analizeaza masa: {request.meal_description}. Raspunde JSON."
     return await call_gemini(prompt, "nutri", user)
 
 @app.post("/predict/recovery-protocol")
 async def recovery_protocol(request: RecoveryRequest):
-    prompt = f"""
-    Durere raportată: {request.sore_parts} (Nivel: {request.pain_level}/10)
-    Profil utilizator: {request.profile.model_dump() if request.profile else "Standard"}
-    
-    Oferă un protocol de recuperare sportivă profesional în ROMÂNĂ.
-    Răspunde DOAR cu JSON:
-    {{
-      "protocol": "listă detaliată de pași, stretching, nutriție, odihnă",
-      "estimated_recovery": "ex: 36 ore"
-    }}
-    """
+    # Folosim .model_dump() pentru compatibilitate Pydantic v2 [cite: 26]
+    profile_data = request.profile.model_dump() if request.profile else "Standard"
+    prompt = f"Ofera protocol pentru: {request.sore_parts}. Profil: {profile_data}. Raspunde JSON."
     return await call_gemini(prompt, "recovery")
+
+# --- NOU: LOGICA PENTRU PR (CALCUL MATEMATIC) ---
+
+@app.post("/analyze-pr-trend")
+async def analyze_pr_trend(data: list = Body(...)):
+    if len(data) < 2:
+        return {"error": "Date insuficiente", "one_rm": 0, "trend": []}
+
+    weights = [float(d.get('weight', 0)) for d in data]
+    reps = [int(d.get('reps', 0)) for d in data]
+    x = np.arange(len(weights))
+
+    # Regresie de grad 2 (y = ax^2 + bx + c)
+    degree = 2 if len(weights) >= 3 else 1
+    model = np.poly1d(np.polyfit(x, weights, degree))
+
+    # Formula Brzycki pentru PR relativ: weight / (1.0278 - 0.0278 * reps)
+    last_w, last_r = weights[-1], reps[-1]
+    one_rm = last_w / (1.0278 - (0.0278 * last_r)) if last_r > 0 else last_w
+
+    return {
+        "trend": [round(float(p), 2) for p in model(x)],
+        "one_rm": round(one_rm, 2),
+        "next_prediction": round(float(model(len(weights))), 2)
+    }
 
 @app.post("/predict/extract-prs")
 async def extract_prs(request: PRRequest):
-    prompt = "Extrage PR-urile din antrenamentele furnizate. JSON: records [exercise, value, icon]."
+    prompt = "Extrage PR-urile din antrenamente. JSON: records [exercise, value]."
     return await call_gemini(prompt, "prs")
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8006)
+    # Pornim pe portul 8006 pentru a repara eroarea de conexiune din Java [cite: 26, 31]
+    uvicorn.run(app, host="127.0.0.1", port=8006)

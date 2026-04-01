@@ -66,9 +66,9 @@ public class FitnessTrackerApplication {
 
                 ProcessBuilder pb = new ProcessBuilder("python", "main.py");
                 pb.directory(pythonDir);
-                pb.inheritIO(); 
+                pb.inheritIO();
                 Process process = pb.start();
-                
+
                 System.out.println("[JAVA] Serviciul AI a pornit pe portul 8006.");
 
                 Runtime.getRuntime().addShutdownHook(new Thread(() -> {

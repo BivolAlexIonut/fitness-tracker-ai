@@ -5,154 +5,181 @@
     <title>Fitness AI - Dashboard</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* Stil izolat pentru secțiunea PR */
+        .card-pr {
+            background-color: #f8f9fa !important; /* Fundal deschis pentru contrast */
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid #ddd;
+        }
+
+        /* Text negru DOAR în cardurile de PR */
+        .card-pr h3 {
+            color: #1a1a1a !important;
+            margin: 10px 0 0 0;
+            font-size: 1.8rem;
+            font-weight: bold;
+        }
+
+        .card-pr small {
+            color: #555555 !important;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* MODIFICARE: Fundal NEGRU pentru grafic */
+        #pr-chart {
+            background-color: #111111; /* Negru intens */
+            border-radius: 12px;
+            padding: 15px;
+            margin-top: 20px;
+            border: 1px solid #333; /* Bordură discretă */
+        }
+    </style>
 </head>
 <body>
-    <script>if (!localStorage.getItem('user')) window.location.href = 'auth.html';</script>
-    
-    <div id="grid-pagina">
-        <header class="header">
-            <div class="logo"><i class="fas fa-dumbbell"></i> Athletica <span class="ai-badge">AI</span></div>
-            <div class="user-pill"><i class="fas fa-user-circle"></i> <span id="display-username"></span></div>
-            <button id="btn-logout" class="btn-logout"><i class="fas fa-sign-out-alt"></i></button>
-        </header>
-        
-        <aside class="sidebar">
-            <div class="nav-group">
-                <button class="tab-btn active" data-target="dashboard-section"><i class="fas fa-th-large"></i> Dashboard</button>
-                <button class="tab-btn" data-target="health-section"><i class="fas fa-heartbeat"></i> Sănătate Zi</button>
-                <button class="tab-btn" data-target="nutri-section"><i class="fas fa-utensils"></i> Nutriție AI</button>
-                <button class="tab-btn" data-target="recovery-section"><i class="fas fa-medkit"></i> Recuperare</button>
-            </div>
-            <button id="btn-show-workout" class="btn-add-action"><i class="fas fa-plus"></i> Antrenament</button>
-        </aside>
+<script>if (!localStorage.getItem('user')) window.location.href = 'auth.html';</script>
 
-        <main class="content">
-            <div id="dashboard-section" class="tab-content active">
-                <div class="hero-card">
-                    <div class="hero-content">
-                        <h2>Sfatul AI Zilnic</h2>
-                        <p id="ai-summary">Analizează datele pentru recomandări...</p>
-                        <p id="ai-recommendation"></p>
-                    </div>
-                    <button id="btn-predictie" class="btn-ai-action">Scanează</button>
-                </div>
-                <div class="card">
-                    <h3>Istoric Activități</h3>
-                    <table class="modern-table">
-                        <thead>
-                            <tr>
-                                <th>Dată</th>
-                                <th>Tip</th>
-                                <th>Detalii</th>
-                                <th>Durată</th>
-                                <th>Puls</th>
-                            </tr>
-                        </thead>
-                        <tbody id="workout-history-body"></tbody>
-                    </table>
-                </div>
-            </div>
+<div id="grid-pagina">
+    <header class="header">
+        <div class="logo"><i class="fas fa-dumbbell"></i> Athletica <span class="ai-badge">AI</span></div>
+        <div class="user-pill"><i class="fas fa-user-circle"></i> <span id="display-username"></span></div>
+        <button id="btn-logout" class="btn-logout"><i class="fas fa-sign-out-alt"></i></button>
+    </header>
 
-            <div id="health-section" class="tab-content" style="display:none">
-                <div class="card">
-                    <h2>Check-in Sănătate</h2>
-                    <div class="form-grid">
-                        <div class="form-group"><label>HRV (ms)</label><input type="number" id="h-hrv" class="modern-input"></div>
-                        <div class="form-group"><label>Ore Somn</label><input type="number" step="0.1" id="h-sleep" class="modern-input"></div>
-                        <div class="form-group"><label>Stres (1-100)</label><input type="number" id="h-stress" class="modern-input"></div>
-                        <div class="form-group"><label>Puls Repaus</label><input type="number" id="h-rhr" class="modern-input"></div>
-                    </div>
-                    <button id="btn-save-health" class="btn-primary" style="margin-top:20px">Salvează Metricile</button>
-                </div>
-            </div>
+    <aside class="sidebar">
+        <div class="nav-group">
+            <button class="tab-btn active" data-target="dashboard-section"><i class="fas fa-th-large"></i> Dashboard</button>
+            <button class="tab-btn" data-target="health-section"><i class="fas fa-heartbeat"></i> Sănătate Zi</button>
+            <button class="tab-btn" data-target="pr-section"><i class="fas fa-chart-line"></i> Recorduri (PR)</button>
+            <button class="tab-btn" data-target="nutri-section"><i class="fas fa-utensils"></i> Nutriție AI</button>
+            <button class="tab-btn" data-target="recovery-section"><i class="fas fa-medkit"></i> Recuperare</button>
+        </div>
+        <button id="btn-show-workout" class="btn-add-action"><i class="fas fa-plus"></i> Antrenament</button>
+    </aside>
 
-            <div id="nutri-section" class="tab-content" style="display:none">
-                <div class="card">
-                    <h2>Nutri-Coach AI</h2>
-                    <textarea id="meal-input" class="modern-textarea" placeholder="Ce ai mâncat?"></textarea>
-                    <button id="btn-analyze-meal" class="btn-primary">Analizează</button>
-                    <div id="meal-feedback" class="feedback-box" style="display:none"></div>
+    <main class="content">
+        <div id="dashboard-section" class="tab-content active">
+            <div class="hero-card">
+                <div class="hero-content">
+                    <h2>Sfatul AI Zilnic</h2>
+                    <p id="ai-summary">Analizează datele pentru recomandări...</p>
+                    <p id="ai-recommendation"></p>
                 </div>
+                <button id="btn-predictie" class="btn-ai-action">Scanează</button>
             </div>
-
-            <div id="recovery-section" class="tab-content" style="display:none">
-                <div class="card">
-                    <h2>Protocol Recuperare</h2>
-                    <input type="text" id="sore-parts" class="modern-input" placeholder="Unde te doare?">
-                    <button id="btn-analyze-recovery" class="btn-primary" style="margin-top:15px">Generează Plan</button>
-                    <div id="recovery-feedback" class="feedback-box" style="display:none"></div>
-                </div>
+            <div class="card">
+                <h3>Istoric Activități</h3>
+                <table class="modern-table">
+                    <thead>
+                    <tr>
+                        <th>Dată</th>
+                        <th>Tip</th>
+                        <th>Detalii</th>
+                        <th>Durată</th>
+                        <th>Puls</th>
+                    </tr>
+                    </thead>
+                    <tbody id="workout-history-body"></tbody>
+                </table>
             </div>
-        </main>
-    </div>
+        </div>
 
-    <div id="workout-modal" class="modal">
-        <div class="modal-card">
-            <h2><i class="fas fa-plus-circle"></i> Antrenament Nou</h2>
-            <form id="workout-form">
+        <div id="pr-section" class="tab-content" style="display:none">
+            <div class="card">
+                <h2><i class="fas fa-trophy"></i> Analiză Recorduri Personale</h2>
                 <div class="form-grid">
                     <div class="form-group">
-                        <label>Tip Activitate</label>
-                        <select id="w-type" class="modern-select">
-                            <option>Gym</option>
-                            <option>Running</option>
-                            <option>Cycling</option>
-                            <option>Swimming</option>
-                            <option>Walking</option>
-                            <option>HIIT</option>
+                        <label>Exercițiu</label>
+                        <select id="pr-exercise" class="modern-select">
+                            <option value="bench-press">Bench Press</option>
+                            <option value="squat">Squat</option>
+                            <option value="deadlift">Deadlift</option>
+                            <option value="overhead-press">Overhead Press</option>
                         </select>
                     </div>
-                    <div class="form-group">
-                        <label>Durată (min)</label>
-                        <input type="number" id="w-duration" class="modern-input" required>
+                    <div class="form-group"><label>Greutate (kg)</label><input type="number" id="pr-weight" class="modern-input"></div>
+                    <div class="form-group"><label>Repetări</label><input type="number" id="pr-reps" class="modern-input"></div>
+                </div>
+                <button id="btn-save-pr" class="btn-primary" style="margin-top:15px">Salvează PR</button>
+
+                <div class="stats-grid" style="display:grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px;">
+                    <div class="card card-pr">
+                        <small>1RM Estimat (Relativ)</small>
+                        <h3 id="display-1rm">-- kg</h3>
+                    </div>
+                    <div class="card card-pr">
+                        <small>Target AI (Grad 2)</small>
+                        <h3 id="display-next">-- kg</h3>
                     </div>
                 </div>
-
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label>Puls Mediu</label>
-                        <input type="number" id="w-avg-hr" class="modern-input" placeholder="BPM">
-                    </div>
-                    <div class="form-group">
-                        <label>Puls Max</label>
-                        <input type="number" id="w-max-hr" class="modern-input" placeholder="BPM">
-                    </div>
-                </div>
-
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label>Calorii Arse</label>
-                        <input type="number" id="w-calories" class="modern-input" placeholder="kcal">
-                    </div>
-                    <div class="form-group">
-                        <label>Distanță (km)</label>
-                        <input type="number" step="0.1" id="w-distance" class="modern-input" placeholder="km">
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label>Intensitate</label>
-                    <select id="w-intensity" class="modern-select">
-                        <option value="Low">Ușoară</option>
-                        <option value="Medium" selected>Moderată</option>
-                        <option value="High">Intensă</option>
-                        <option value="Max">Maximală</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label>Detalii (Exerciții / Note)</label>
-                    <textarea id="w-details" class="modern-textarea" placeholder="Notează seturile sau traseul..."></textarea>
-                </div>
-
-                <div style="display:flex; gap:10px; margin-top:20px;">
-                    <button type="submit" class="btn-save" style="flex:2">Salvează Antrenamentul</button>
-                    <button type="button" onclick="document.getElementById('workout-modal').style.display='none'" class="btn-cancel" style="flex:1">Anulează</button>
-                </div>
-            </form>
+                <canvas id="pr-chart" style="max-height: 300px;"></canvas>
+            </div>
         </div>
-    </div>
 
-    <script src="script.js"></script>
+        <div id="health-section" class="tab-content" style="display:none">
+            <div class="card">
+                <h2>Check-in Sănătate</h2>
+                <div class="form-grid">
+                    <div class="form-group"><label>HRV (ms)</label><input type="number" id="h-hrv" class="modern-input"></div>
+                    <div class="form-group"><label>Ore Somn</label><input type="number" step="0.1" id="h-sleep" class="modern-input"></div>
+                    <div class="form-group"><label>Stres (1-100)</label><input type="number" id="h-stress" class="modern-input"></div>
+                    <div class="form-group"><label>Puls Repaus</label><input type="number" id="h-rhr" class="modern-input"></div>
+                </div>
+                <button id="btn-save-health" class="btn-primary" style="margin-top:20px">Salvează Metricile</button>
+            </div>
+        </div>
+
+        <div id="nutri-section" class="tab-content" style="display:none">
+            <div class="card">
+                <h2>Nutri-Coach AI</h2>
+                <textarea id="meal-input" class="modern-textarea" placeholder="Ce ai mâncat?"></textarea>
+                <button id="btn-analyze-meal" class="btn-primary">Analizează</button>
+                <div id="meal-feedback" class="feedback-box" style="display:none"></div>
+            </div>
+        </div>
+
+        <div id="recovery-section" class="tab-content" style="display:none">
+            <div class="card">
+                <h2>Protocol Recuperare</h2>
+                <input type="text" id="sore-parts" class="modern-input" placeholder="Unde te doare?">
+                <button id="btn-analyze-recovery" class="btn-primary" style="margin-top:15px">Generează Plan</button>
+                <div id="recovery-feedback" class="feedback-box" style="display:none"></div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<div id="workout-modal" class="modal">
+    <div class="modal-card">
+        <h2><i class="fas fa-plus-circle"></i> Antrenament Nou</h2>
+        <form id="workout-form">
+            <div class="form-grid">
+                <div class="form-group"><label>Tip Activitate</label><select id="w-type" class="modern-select"><option>Gym</option><option>Running</option><option>Cycling</option><option>Swimming</option><option>Walking</option><option>HIIT</option></select></div>
+                <div class="form-group"><label>Durată (min)</label><input type="number" id="w-duration" class="modern-input" required></div>
+            </div>
+            <div class="form-grid">
+                <div class="form-group"><label>Puls Mediu</label><input type="number" id="w-avg-hr" class="modern-input" placeholder="BPM"></div>
+                <div class="form-group"><label>Puls Max</label><input type="number" id="w-max-hr" class="modern-input" placeholder="BPM"></div>
+            </div>
+            <div class="form-grid">
+                <div class="form-group"><label>Calorii Arse</label><input type="number" id="w-calories" class="modern-input" placeholder="kcal"></div>
+                <div class="form-group"><label>Distanță (km)</label><input type="number" step="0.1" id="w-distance" class="modern-input" placeholder="km"></div>
+            </div>
+            <div class="form-group"><label>Intensitate</label><select id="w-intensity" class="modern-select"><option value="Low">Ușoară</option><option value="Medium" selected>Moderată</option><option value="High">Intensă</option><option value="Max">Maximală</option></select></div>
+            <div class="form-group"><label>Detalii (Exerciții / Note)</label><textarea id="w-details" class="modern-textarea" placeholder="Notează seturile sau traseul..."></textarea></div>
+            <div style="display:flex; gap:10px; margin-top:20px;">
+                <button type="submit" class="btn-save" style="flex:2">Salvează Antrenamentul</button>
+                <button type="button" onclick="document.getElementById('workout-modal').style.display='none'" class="btn-cancel" style="flex:1">Anulează</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="script.js"></script>
 </body>
 </html>
