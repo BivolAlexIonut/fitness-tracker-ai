@@ -27,6 +27,34 @@ document.addEventListener('DOMContentLoaded', () => {
     const tabBtns = document.querySelectorAll('.tab-btn');
     const tabContents = document.querySelectorAll('.tab-content');
 
+    // Funcție pentru încărcarea exercițiilor din baza de date
+    async function loadExerciseOptions() {
+        const prSelect = document.getElementById('pr-exercise');
+        if (!prSelect) return;
+
+        try {
+            const res = await fetch(`${API_BASE}/exercises`);
+            if (res.ok) {
+                const exercises = await res.json();
+                if (exercises.length > 0) {
+                    prSelect.innerHTML = ''; // Curățăm opțiunile statice
+                    exercises.forEach(ex => {
+                        const opt = document.createElement('option');
+                        opt.value = ex.name;
+                        opt.innerText = ex.displayName;
+                        prSelect.appendChild(opt);
+                    });
+                    // Reîncărcăm analiza pentru primul exercițiu din listă
+                    loadPRAnalytics(prSelect.value);
+                }
+            }
+        } catch (e) {
+            console.error("Eroare încărcare exerciții:", e);
+        }
+    }
+
+    loadExerciseOptions();
+
     tabBtns.forEach(btn => {
         btn.addEventListener('click', () => {
             const targetId = btn.getAttribute('data-target');
@@ -167,8 +195,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const historyRes = await fetch(`${API_BASE}/pr/${user.id}/${exercise}`);
             const history = await historyRes.json();
 
-            if (history.length < 2) {
-                console.log("Date insuficiente pentru analiză AI.");
+            if (history.length === 0) {
+                document.getElementById('display-1rm').innerText = "-- kg";
+                document.getElementById('display-next').innerText = "-- kg";
+                if (prChartInstance) prChartInstance.destroy();
                 return;
             }
 

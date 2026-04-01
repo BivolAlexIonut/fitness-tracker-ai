@@ -165,13 +165,31 @@ async def recovery_protocol(request: RecoveryRequest):
 
 @app.post("/analyze-pr-trend")
 async def analyze_pr_trend(data: list = Body(...)):
-    if len(data) < 2: return {"error": "Date insuficiente"}
+    if not data: return {"error": "Lipsesc datele"}
+    
     weights = [float(d.get('weight', 0)) for d in data]
+    reps = [int(d.get('reps', 1)) for d in data]
+    
+    # Calcul 1RM (Epley formula) pentru ultimul record
+    last_weight = weights[-1]
+    last_reps = reps[-1]
+    one_rm = round(last_weight * (1 + 0.0333 * last_reps), 2) if last_reps > 1 else last_weight
+    
+    if len(weights) < 2:
+        return {
+            "trend": [last_weight],
+            "one_rm": one_rm,
+            "next_prediction": last_weight # Fără istoric, predicția e greutatea actuală
+        }
+        
     x = np.arange(len(weights))
-    model = np.poly1d(np.polyfit(x, weights, 2 if len(weights) >= 3 else 1))
+    # Folosim grad 2 doar dacă avem cel puțin 3 puncte, altfel grad 1 (linie dreaptă)
+    degree = 2 if len(weights) >= 3 else 1
+    model = np.poly1d(np.polyfit(x, weights, degree))
+    
     return {
         "trend": [round(float(p), 2) for p in model(x)],
-        "one_rm": round(weights[-1] * (1 + 0.0333 * int(data[-1].get('reps', 1))), 2),
+        "one_rm": one_rm,
         "next_prediction": round(float(model(len(weights))), 2)
     }
 
