@@ -5,7 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const userStr = localStorage.getItem('user');
     if (!userStr) {
         console.warn("Utilizator nelogat, redirecționare...");
-        window.location.href = 'auth.html'; // [cite: 34]
+        window.location.href = 'auth.html';
         return;
     }
 
@@ -15,10 +15,9 @@ document.addEventListener('DOMContentLoaded', () => {
         id: userRaw.id || userRaw.userId,
         userId: userRaw.userId || userRaw.id
     };
-    console.log("Sesiune activă pentru:", user.username, "ID:", user.id); // [cite: 35]
+    console.log("Sesiune activă pentru:", user.username, "ID:", user.id);
 
     const API_BASE = "http://127.0.0.1:8080/api";
-    // Corecție Port: Modificat de la 8005 la 8006 pentru a coincide cu configurarea main.py
     const AI_PR_API = "http://127.0.0.1:8006/analyze-pr-trend";
 
     const displayUsername = document.getElementById('display-username');
@@ -214,7 +213,7 @@ document.addEventListener('DOMContentLoaded', () => {
         prSelect.onchange = () => loadPRAnalytics(prSelect.value);
     }
 
-    // --- 6. ALTE FUNCȚII AI [cite: 36, 41, 44] ---
+    // --- 6. ALTE FUNCȚII AI ---
     const btnPredict = document.getElementById('btn-predictie');
     if (btnPredict) {
         btnPredict.onclick = async () => {
@@ -231,7 +230,7 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     }
 
-    // Nutriție AI [cite: 41, 42]
+    // Nutriție AI
     const btnAnalyzeMeal = document.getElementById('btn-analyze-meal');
     if (btnAnalyzeMeal) {
         btnAnalyzeMeal.onclick = async () => {
@@ -252,7 +251,7 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     }
 
-    // Recuperare AI [cite: 43, 44]
+    // Recuperare AI
     const btnAnalyzeRec = document.getElementById('btn-analyze-recovery');
     if (btnAnalyzeRec) {
         btnAnalyzeRec.onclick = async () => {
