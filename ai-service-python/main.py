@@ -65,15 +65,28 @@ class PredictionRequest(BaseModel):
     recent_workouts: Optional[List[WorkoutLog]] = []
     daily_metrics: Optional[List[DailyMetricsLog]] = []
 
+class WorkoutProposalRequest(BaseModel):
+    user_input: str
+    profile: Optional[UserProfile]
+    recent_workouts: Optional[List[WorkoutLog]] = []
+    daily_metrics: Optional[List[DailyMetricsLog]] = []
+
 class MealAnalysisRequest(BaseModel):
     meal_description: str
     profile: Optional[UserProfile]
 
+class MealProposalRequest(BaseModel):
+    ingredients: str
+    profile: Optional[UserProfile]
+    recent_workouts: Optional[List[WorkoutLog]] = []
+    daily_metrics: Optional[List[DailyMetricsLog]] = []
+
 class RecoveryRequest(BaseModel):
-    sore_parts: str
-    pain_level: int
+    user_message: str
+    chat_history: Optional[List[dict]] = []
     profile: Optional[UserProfile] = None
     recent_workouts: Optional[List[WorkoutLog]] = []
+    daily_metrics: Optional[List[DailyMetricsLog]] = []
 
 class PRRequest(BaseModel):
     workouts: List[WorkoutLog]
@@ -157,11 +170,31 @@ async def analyze_meal(request: MealAnalysisRequest):
     user = request.profile.username if request.profile else "Utilizator"
     prompt = f"Analizează masa: {request.meal_description}. Răspunde DOAR cu JSON: {{'calories': număr, 'protein': număr, 'carbs': număr, 'fats': număr, 'feedback': 'text'}}"
     return await call_gemini(prompt, "nutri", user)
+@app.post("/predict/recovery-chat")
+async def recovery_chat(request: RecoveryRequest):
+    user = request.profile.username if request.profile else "Utilizator"
+    context = f"Utilizator: {user}, Scop: {request.profile.fitnessGoal}\n"
+    context += f"Antrenamente recente: {json.dumps([w.model_dump() for w in request.recent_workouts], indent=2)}\n"
+    context += f"Metricile de azi: {json.dumps([m.model_dump() for m in request.daily_metrics], indent=2)}\n"
 
-@app.post("/predict/recovery-protocol")
-async def recovery_protocol(request: RecoveryRequest):
-    prompt = f"Ofera protocol pentru: {request.sore_parts}. Raspunde JSON: {{'protocol': 'text', 'estimated_recovery': 'text'}}"
-    return await call_gemini(prompt, "recovery")
+    history_str = "\n".join([f"{m['role']}: {m['content']}" for m in request.chat_history])
+
+    prompt = f"""
+    Context Fizic: {context}
+    Istoric Chat: {history_str}
+    Ultimul Mesaj Utilizator: {request.user_message}
+
+    Esti un asistent expert in recuperare sportiva. 
+    Daca utilizatorul spune ca il doare ceva, intreaba-l detalii (intensitate, cand a aparut, tipul durerii) inainte de a da un protocol final.
+    Daca ai destule detalii, ofera un protocol clar de recuperare (stretching, gheata, repaus etc.).
+
+    Răspunde DOAR cu JSON:
+    {{
+      "message": "raspunsul tau catre utilizator aici",
+      "is_final_protocol": true/false
+    }}
+    """
+    return await call_gemini(prompt, "recovery", user)
 
 @app.post("/analyze-pr-trend")
 async def analyze_pr_trend(data: list = Body(...)):
@@ -192,6 +225,54 @@ async def analyze_pr_trend(data: list = Body(...)):
         "one_rm": one_rm,
         "next_prediction": round(float(model(len(weights))), 2)
     }
+
+@app.post("/predict/workout-proposal")
+async def get_workout_proposal(request: WorkoutProposalRequest):
+    user = request.profile.username if request.profile else "Utilizator"
+    context = f"Utilizator: {user}, Scop: {request.profile.fitnessGoal}, Vârstă: {request.profile.age}\n"
+    context += f"Antrenamente recente (ultimele 10): {json.dumps([w.model_dump() for w in request.recent_workouts], indent=2)}\n"
+    context += f"Metricile de sănătate recente: {json.dumps([m.model_dump() for m in request.daily_metrics], indent=2)}\n"
+    
+    prompt = f"""
+    Context Date Utilizator: {context}
+    Cerere Utilizator: {request.user_input}
+    
+    Propune un antrenament personalizat în ROMÂNĂ bazat pe cererea utilizatorului și starea lui actuală (metrici, antrenamente anterioare).
+    Dacă utilizatorul este obosit (HRV mic, somn puțin, stres mare), propune ceva mai ușor chiar dacă el cere ceva intens.
+    
+    Răspunde DOAR cu JSON:
+    {{
+      "workout_name": "Numele antrenamentului",
+      "exercises": "Lista de exerciții, seturi, repetări sub formă de text",
+      "ai_notes": "De ce am propus asta bazat pe datele tale"
+    }}
+    """
+    return await call_gemini(prompt, "workout", user)
+
+@app.post("/predict/meal-proposal")
+async def get_meal_proposal(request: MealProposalRequest):
+    user = request.profile.username if request.profile else "Utilizator"
+    context = f"Utilizator: {user}, Scop: {request.profile.fitnessGoal}, Vârstă: {request.profile.age}\n"
+    context += f"Antrenamente recente: {json.dumps([w.model_dump() for w in request.recent_workouts], indent=2)}\n"
+    context += f"Metricile de sănătate recente: {json.dumps([m.model_dump() for m in request.daily_metrics], indent=2)}\n"
+    
+    prompt = f"""
+    Context Date Utilizator: {context}
+    Ingrediente Disponibile: {request.ingredients}
+    
+    Propune o masă/dietă pentru astăzi în ROMÂNĂ bazată pe ingredientele pe care utilizatorul le are în casă și pe activitatea lui recentă.
+    Dacă a avut un antrenament intens, propune ceva bogat în proteine și carbohidrați.
+    Dacă metricile arată stres mare sau somn puțin, propune ceva nutritiv și ușor de digerat.
+    
+    Răspunde DOAR cu JSON:
+    {{
+      "meal_name": "Numele mesei",
+      "recipe": "Instrucțiuni scurte de preparare",
+      "nutritional_info": "Calorii și macronutrienți estimați",
+      "ai_reasoning": "De ce este această masă potrivită pentru tine astăzi"
+    }}
+    """
+    return await call_gemini(prompt, "nutri", user)
 
 if __name__ == "__main__":
     import uvicorn

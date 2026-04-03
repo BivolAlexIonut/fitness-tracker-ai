@@ -30,4 +30,36 @@ public class AIController {
         }
         return ResponseEntity.notFound().build();
     }
+
+    @PostMapping("/workout-proposal")
+    public ResponseEntity<?> getWorkoutProposal(@RequestParam Long userId, @RequestBody Map<String, String> request) {
+        Optional<User> userOpt = userRepository.findById(userId);
+        if (userOpt.isPresent()) {
+            String userInput = request.get("userInput");
+            Map<String, Object> proposal = aiService.getWorkoutProposal(userOpt.get(), userInput);
+            return ResponseEntity.ok(proposal);
+        }
+        return ResponseEntity.notFound().build();
+    }
+
+    @PostMapping("/meal-proposal")
+    public ResponseEntity<?> getMealProposal(@RequestParam Long userId, @RequestBody Map<String, String> request) {
+        Optional<User> userOpt = userRepository.findById(userId);
+        if (userOpt.isPresent()) {
+            String ingredients = request.get("ingredients");
+            Map<String, Object> proposal = aiService.getMealProposal(userOpt.get(), ingredients);
+            return ResponseEntity.ok(proposal);
+        }
+        return ResponseEntity.notFound().build();
+    }
+
+    @PostMapping("/recovery-chat")
+    public ResponseEntity<?> getRecoveryChat(@RequestParam Long userId, @RequestBody Map<String, Object> request) {
+        Optional<User> userOpt = userRepository.findById(userId);
+        if (userOpt.isPresent()) {
+            Map<String, Object> response = aiService.getRecoveryChat(userOpt.get(), request);
+            return ResponseEntity.ok(response);
+        }
+        return ResponseEntity.notFound().build();
+    }
 }

@@ -317,6 +317,39 @@ label {
     to { transform: rotate(360deg); }
 }
 
+/* Mesaje Chat & AI Feedback */
+.ai-msg, .user-msg {
+    padding: 15px 20px;
+    border-radius: 15px;
+    max-width: 85%;
+    line-height: 1.6;
+    font-size: 15px;
+    position: relative;
+    animation: fadeIn 0.3s ease;
+}
+
+.ai-msg {
+    background: #111;
+    border-left: 4px solid #fff;
+    color: #ccc;
+    align-self: flex-start;
+}
+
+.user-msg {
+    background: #222;
+    color: #fff;
+    align-self: flex-end;
+}
+
+.ai-msg strong { color: #fff; display: block; margin-bottom: 5px; font-size: 16px; }
+.ai-msg ul { margin-left: 20px; margin-top: 10px; }
+.ai-msg li { margin-bottom: 8px; }
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
 /* Feedback Box AI */
 .feedback-box {
     margin-top: 30px;
