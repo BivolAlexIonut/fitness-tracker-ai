@@ -69,10 +69,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 btn.classList.add('active');
             }
 
-            // Încărcare automată analiză dacă intrăm pe secțiunea PR
+            // Încărcare automată analiză dacă intrăm pe secțiunile relevante
             if (targetId === 'pr-section') {
                 const prSelect = document.getElementById('pr-exercise');
                 if (prSelect) loadPRAnalytics(prSelect.value);
+            } else if (targetId === 'health-section') {
+                loadHealthMetrics();
             }
         });
     });
@@ -195,6 +197,25 @@ document.addEventListener('DOMContentLoaded', () => {
             const historyRes = await fetch(`${API_BASE}/pr/${user.id}/${exercise}`);
             const history = await historyRes.json();
 
+            // Populare istoric tabel PR
+            const prHistoryBody = document.getElementById('pr-history-body');
+            const prHistoryTitle = document.getElementById('pr-history-title');
+            if (prHistoryTitle) prHistoryTitle.innerText = exercise;
+            
+            if (prHistoryBody) {
+                if (history.length === 0) {
+                    prHistoryBody.innerHTML = '<tr><td colspan="3" style="text-align:center;">Niciun record găsit.</td></tr>';
+                } else {
+                    prHistoryBody.innerHTML = history.map(h => `
+                        <tr>
+                            <td>${new Date(h.date).toLocaleDateString('ro-RO')}</td>
+                            <td><strong>${h.weight} kg</strong></td>
+                            <td>${h.reps}</td>
+                        </tr>
+                    `).join('');
+                }
+            }
+
             if (history.length === 0) {
                 document.getElementById('display-1rm').innerText = "-- kg";
                 document.getElementById('display-next').innerText = "-- kg";
@@ -243,7 +264,104 @@ document.addEventListener('DOMContentLoaded', () => {
         prSelect.onchange = () => loadPRAnalytics(prSelect.value);
     }
 
-    // --- 6. ALTE FUNCȚII AI ---
+    // --- 6. DAILY METRICS (HEALTH) ---
+    const btnSaveHealth = document.getElementById('btn-save-health');
+    let healthChartInstance = null;
+
+    if (btnSaveHealth) {
+        btnSaveHealth.onclick = async () => {
+            const hrv = document.getElementById('h-hrv').value;
+            const sleep = document.getElementById('h-sleep').value;
+            const stress = document.getElementById('h-stress').value;
+            const rhr = document.getElementById('h-rhr').value;
+
+            if (!hrv || !sleep || !stress || !rhr) {
+                alert("Te rugăm să completezi toate câmpurile!");
+                return;
+            }
+
+            const metricsData = {
+                hrv: parseInt(hrv),
+                sleepHours: parseFloat(sleep),
+                stressLevel: parseInt(stress),
+                restingHeartRate: parseInt(rhr),
+                date: new Date().toISOString().split('T')[0] // Doar data YYYY-MM-DD
+            };
+
+            try {
+                const res = await fetch(`${API_BASE}/metrics/add/${user.id}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(metricsData)
+                });
+                if (res.ok) {
+                    alert("Metrici salvate cu succes! ❤️");
+                    loadHealthMetrics();
+                }
+            } catch (e) { console.error("Eroare salvare metrici:", e); }
+        };
+    }
+
+    async function loadHealthMetrics() {
+        const historyBody = document.getElementById('health-history-body');
+        if (!historyBody) return;
+
+        try {
+            const res = await fetch(`${API_BASE}/metrics/user/${user.id}`);
+            if (res.ok) {
+                const metrics = await res.json();
+                if (metrics.length === 0) {
+                    historyBody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Nicio metrică găsită.</td></tr>';
+                    return;
+                }
+                historyBody.innerHTML = metrics.map(m => `
+                    <tr>
+                        <td><strong>${new Date(m.date).toLocaleDateString('ro-RO')}</strong></td>
+                        <td>${m.hrv} ms</td>
+                        <td>${m.sleepHours} h</td>
+                        <td>${m.stressLevel}/100</td>
+                        <td>${m.restingHeartRate} BPM</td>
+                    </tr>
+                `).join('');
+
+                renderHealthChart(metrics);
+            }
+        } catch (e) { console.error("Eroare încărcare metrici:", e); }
+    }
+
+    function renderHealthChart(metrics) {
+        const canvas = document.getElementById('health-chart');
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        if (healthChartInstance) healthChartInstance.destroy();
+
+        // Sortăm metricile cronologic pentru grafic (backend le dă DESC probabil)
+        const sortedMetrics = [...metrics].reverse();
+
+        healthChartInstance = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: sortedMetrics.map(m => new Date(m.date).toLocaleDateString('ro-RO')),
+                datasets: [
+                    { label: 'HRV (ms)', data: sortedMetrics.map(m => m.hrv), borderColor: '#2ecc71', tension: 0.1 },
+                    { label: 'Somn (ore)', data: sortedMetrics.map(m => m.sleepHours), borderColor: '#9b59b6', tension: 0.1 },
+                    { label: 'Stres', data: sortedMetrics.map(m => m.stressLevel), borderColor: '#e74c3c', tension: 0.1 }
+                ]
+            },
+            options: { 
+                responsive: true, 
+                plugins: { 
+                    legend: { labels: { color: '#fff' } } 
+                },
+                scales: {
+                    x: { ticks: { color: '#ccc' } },
+                    y: { ticks: { color: '#ccc' } }
+                }
+            }
+        });
+    }
+
+    // --- 7. ALTE FUNCȚII AI ---
     const btnPredict = document.getElementById('btn-predictie');
     if (btnPredict) {
         btnPredict.onclick = async () => {
