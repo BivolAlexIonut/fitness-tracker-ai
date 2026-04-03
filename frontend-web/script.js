@@ -378,19 +378,64 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // --- Funcții Utilitare pentru UI ---
+    function formatAIResponse(text) {
+        if (!text) return "";
+        
+        // 1. Transformă bold-ul (**text**) în tag-uri strong
+        let formatted = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+
+        // 2. Identifică și formatează listele numerotate (1. , 2. , etc)
+        // Căutăm blocuri de linii care încep cu cifre
+        formatted = formatted.replace(/(?:^\d+\.\s+.*\n?)+/gm, (match) => {
+            const items = match.trim().split('\n').map(line => `<li>${line.replace(/^\d+\.\s+/, '')}</li>`).join('');
+            return `<ol style="margin-left: 20px; margin-top: 10px; margin-bottom: 10px;">${items}</ol>`;
+        });
+
+        // 3. Identifică și formatează listele cu puncte (- sau *)
+        formatted = formatted.replace(/(?:^\s*[\-\*]\s+.*\n?)+/gm, (match) => {
+            const items = match.trim().split('\n').map(line => `<li>${line.replace(/^\s*[\-\*]\s+/, '')}</li>`).join('');
+            return `<ul style="margin-left: 20px; margin-top: 10px; margin-bottom: 10px;">${items}</ul>`;
+        });
+
+        // 4. Transformă newline în br pentru textul normal (evităm dublarea br după liste)
+        // Înlocuim \n doar dacă nu este imediat după un tag de listă
+        formatted = formatted.replace(/\n/g, '<br>');
+        
+        return formatted;
+    }
+
+    function typeWriter(element, text, speed = 10) {
+        element.innerHTML = "";
+        element.style.display = "block";
+        let i = 0;
+        const formattedText = formatAIResponse(text);
+        
+        // Pentru rapiditate și structură, injectăm direct HTML-ul formatat
+        // dar putem face un mic efect de fade-in
+        element.style.opacity = 0;
+        element.innerHTML = formattedText;
+        let opacity = 0;
+        const interval = setInterval(() => {
+            opacity += 0.1;
+            element.style.opacity = opacity;
+            if (opacity >= 1) clearInterval(interval);
+        }, 30);
+    }
+
     // --- 7. ALTE FUNCȚII AI ---
     const btnPredict = document.getElementById('btn-predictie');
     if (btnPredict) {
         btnPredict.onclick = async () => {
             const summary = document.getElementById('ai-summary');
+            const recommendation = document.getElementById('ai-recommendation');
             btnPredict.classList.add('btn-loading');
             try {
-                // Endpoint corectat pentru port 8080 care apelează intern AI-ul pe 8006
                 const res = await fetch(`${API_BASE}/ai/prediction?userId=${user.id}`);
                 if (res.ok) {
                     const data = await res.json();
-                    summary.innerText = data.summary || "Analiză completă.";
-                    document.getElementById('ai-recommendation').innerText = data.recommendation || "";
+                    typeWriter(summary, data.summary);
+                    typeWriter(recommendation, `**Recomandare:** ${data.recommendation}`);
                 }
             } catch (e) { summary.innerText = "Eroare AI."; }
             finally { btnPredict.classList.remove('btn-loading'); }
@@ -412,34 +457,139 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
                 if (res.ok) {
                     const data = await res.json();
-                    feedbackBox.style.display = "block";
-                    feedbackBox.innerText = `Calorii: ${data.calories} | Feedback: ${data.feedback}`;
+                    typeWriter(feedbackBox, `**Calorii:** ${data.calories} kcal<br>**Feedback:** ${data.feedback}`);
                 }
             } catch (e) { console.error(e); }
             finally { btnAnalyzeMeal.classList.remove('btn-loading'); }
         };
     }
 
-    // Recuperare AI
-    const btnAnalyzeRec = document.getElementById('btn-analyze-recovery');
-    if (btnAnalyzeRec) {
-        btnAnalyzeRec.onclick = async () => {
-            const sore = document.getElementById('sore-parts').value;
-            const feedbackBox = document.getElementById('recovery-feedback');
-            btnAnalyzeRec.classList.add('btn-loading');
+    // --- Recovery AI Chat ---
+    const btnSendRecovery = document.getElementById('btn-send-recovery');
+    const recoveryInput = document.getElementById('recovery-chat-input');
+    const chatContainer = document.getElementById('recovery-chat-container');
+    let recoveryChatHistory = [];
+
+    if (btnSendRecovery && recoveryInput) {
+        const sendMessage = async () => {
+            const text = recoveryInput.value.trim();
+            if (!text) return;
+
+            const userDiv = document.createElement('div');
+            userDiv.className = "user-msg";
+            userDiv.innerText = text;
+            chatContainer.appendChild(userDiv);
+            
+            recoveryInput.value = '';
+            btnSendRecovery.classList.add('btn-loading');
+
             try {
-                const res = await fetch(`${API_BASE}/recovery/analyze?userId=${user.id}`, {
+                const res = await fetch(`${API_BASE}/ai/recovery-chat?userId=${user.id}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ soreParts: sore })
+                    body: JSON.stringify({
+                        user_message: text,
+                        chat_history: recoveryChatHistory
+                    })
                 });
+
                 if (res.ok) {
                     const data = await res.json();
-                    feedbackBox.style.display = "block";
-                    feedbackBox.innerText = data.protocol || data.feedback;
+                    const aiDiv = document.createElement('div');
+                    aiDiv.className = "ai-msg";
+                    if (data.is_final_protocol) {
+                        aiDiv.style.borderLeftColor = "#2ecc71";
+                    }
+                    
+                    chatContainer.appendChild(aiDiv);
+                    typeWriter(aiDiv, data.message);
+                    
+                    recoveryChatHistory.push({ role: "user", content: text });
+                    recoveryChatHistory.push({ role: "assistant", content: data.message });
+                    if (recoveryChatHistory.length > 10) recoveryChatHistory.shift();
+                    
+                    chatContainer.scrollTop = chatContainer.scrollHeight;
                 }
             } catch (e) { console.error(e); }
-            finally { btnAnalyzeRec.classList.remove('btn-loading'); }
+            finally { btnSendRecovery.classList.remove('btn-loading'); }
+        };
+
+        btnSendRecovery.onclick = sendMessage;
+        recoveryInput.onkeypress = (e) => { if (e.key === 'Enter') sendMessage(); };
+    }
+
+    // --- 8. GENERARE MASĂ PERSONALIZATĂ AI ---
+    const btnGenMeal = document.getElementById('btn-generate-meal');
+    if (btnGenMeal) {
+        btnGenMeal.onclick = async () => {
+            const ingredients = document.getElementById('ai-ingredients-input').value;
+            const resultBox = document.getElementById('ai-meal-result');
+
+            if (!ingredients) {
+                alert("Te rugăm să introduci ce ingrediente ai la dispoziție!");
+                return;
+            }
+
+            btnGenMeal.classList.add('btn-loading');
+            try {
+                const res = await fetch(`${API_BASE}/ai/meal-proposal?userId=${user.id}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ ingredients: ingredients })
+                });
+
+                if (res.ok) {
+                    const data = await res.json();
+                    resultBox.style.display = "block";
+                    const content = `**${data.meal_name}**<br><br>${data.recipe}<br><br>**Nutriție:** ${data.nutritional_info}<br><br>*Note: ${data.ai_reasoning}*`;
+                    
+                    // Curățăm elementele vechi și folosim typeWriter
+                    resultBox.innerHTML = "";
+                    const innerDiv = document.createElement('div');
+                    resultBox.appendChild(innerDiv);
+                    typeWriter(innerDiv, content);
+                    
+                    resultBox.scrollIntoView({ behavior: 'smooth' });
+                }
+            } catch (e) { console.error(e); }
+            finally { btnGenMeal.classList.remove('btn-loading'); }
+        };
+    }
+
+    // --- 9. GENERARE ANTRENAMENT PERSONALIZAT AI ---
+    const btnGenWorkout = document.getElementById('btn-generate-workout');
+    if (btnGenWorkout) {
+        btnGenWorkout.onclick = async () => {
+            const userInput = document.getElementById('ai-workout-input').value;
+            const resultBox = document.getElementById('ai-workout-result');
+            
+            if (!userInput) {
+                alert("Te rugăm să introduci câteva detalii despre ce antrenament dorești!");
+                return;
+            }
+
+            btnGenWorkout.classList.add('btn-loading');
+            try {
+                const res = await fetch(`${API_BASE}/ai/workout-proposal?userId=${user.id}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userInput: userInput })
+                });
+
+                if (res.ok) {
+                    const data = await res.json();
+                    resultBox.style.display = "block";
+                    const content = `**${data.workout_name}**<br><br>${data.exercises}<br><br>**De ce acest plan:** ${data.ai_notes}`;
+                    
+                    resultBox.innerHTML = "";
+                    const innerDiv = document.createElement('div');
+                    resultBox.appendChild(innerDiv);
+                    typeWriter(innerDiv, content);
+                    
+                    resultBox.scrollIntoView({ behavior: 'smooth' });
+                }
+            } catch (e) { console.error(e); }
+            finally { btnGenWorkout.classList.remove('btn-loading'); }
         };
     }
 });

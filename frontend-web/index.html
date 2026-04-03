@@ -38,6 +38,21 @@
                 </div>
                 <button id="btn-predictie" class="btn-ai-action">Scanează</button>
             </div>
+            <div class="card" style="margin-top: 20px;">
+                <h3><i class="fas fa-magic"></i> Antrenor Personal AI</h3>
+                <p class="subtitle">Spune-i AI-ului ce vrei să lucrezi astăzi (ex: "Vreau CrossFit", "Picioare intens")</p>
+                <textarea id="ai-workout-input" class="modern-textarea" style="height: 80px;" placeholder="Ex: Vreau un antrenament de CrossFit astăzi, am 45 de minute..."></textarea>
+                <button id="btn-generate-workout" class="btn-primary" style="margin-top: 15px; width: 100%;">Generează Antrenament Personalizat</button>
+                
+                <div id="ai-workout-result" class="feedback-box" style="display:none; margin-top: 20px;">
+                    <h4 id="ai-w-name" style="color: #fff; margin-bottom: 10px; border-bottom: 1px solid #333; padding-bottom: 5px;"></h4>
+                    <div id="ai-w-exercises" style="white-space: pre-wrap; font-family: monospace; color: #ccc; margin-bottom: 15px;"></div>
+                    <div style="font-size: 0.9rem; font-style: italic; color: #888; border-top: 1px solid #333; pt-10; margin-top: 10px;">
+                        <strong>Note AI:</strong> <span id="ai-w-notes"></span>
+                    </div>
+                </div>
+            </div>
+
             <div class="card">
                 <h3>Istoric Activități</h3>
                 <table class="modern-table">
@@ -150,7 +165,23 @@
 
         <div id="nutri-section" class="tab-content" style="display:none">
             <div class="card">
-                <h2>Nutri-Coach AI</h2>
+                <h2><i class="fas fa-utensils"></i> Generator Dietă AI</h2>
+                <p class="subtitle">Introdu ingredientele pe care le ai (ex: "pui, orez, broccoli, iaurt") și AI-ul va genera o masă optimă pentru tine.</p>
+                <textarea id="ai-ingredients-input" class="modern-textarea" style="height: 80px;" placeholder="Ce ai în frigider? Ex: ouă, spanac, brânză feta..."></textarea>
+                <button id="btn-generate-meal" class="btn-primary" style="margin-top: 15px; width: 100%;">Generează Masă Personalizată</button>
+
+                <div id="ai-meal-result" class="feedback-box" style="display:none; margin-top: 20px;">
+                    <h4 id="ai-m-name" style="color: #fff; margin-bottom: 10px; border-bottom: 1px solid #333; padding-bottom: 5px;"></h4>
+                    <div id="ai-m-recipe" style="white-space: pre-wrap; color: #ccc; margin-bottom: 15px;"></div>
+                    <div id="ai-m-nutri" style="font-weight: bold; color: #fff; margin-bottom: 10px;"></div>
+                    <div style="font-size: 0.9rem; font-style: italic; color: #888; border-top: 1px solid #333; pt-10; margin-top: 10px;">
+                        <strong>Logica AI:</strong> <span id="ai-m-reasoning"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>Analiză Masă Rapidă</h2>
                 <textarea id="meal-input" class="modern-textarea" placeholder="Ce ai mâncat?"></textarea>
                 <button id="btn-analyze-meal" class="btn-primary">Analizează</button>
                 <div id="meal-feedback" class="feedback-box" style="display:none"></div>
@@ -158,11 +189,21 @@
         </div>
 
         <div id="recovery-section" class="tab-content" style="display:none">
-            <div class="card">
-                <h2>Protocol Recuperare</h2>
-                <input type="text" id="sore-parts" class="modern-input" placeholder="Unde te doare?">
-                <button id="btn-analyze-recovery" class="btn-primary" style="margin-top:15px">Generează Plan</button>
-                <div id="recovery-feedback" class="feedback-box" style="display:none"></div>
+            <div class="card" style="display: flex; flex-direction: column; height: 600px;">
+                <h2><i class="fas fa-comment-medical"></i> Asistent Recuperare AI</h2>
+                <p class="subtitle">Discută cu AI-ul despre durerile tale pentru un protocol personalizat.</p>
+                
+                <div id="recovery-chat-container" style="flex: 1; overflow-y: auto; background: #000; border: 1px solid #222; border-radius: 8px; padding: 20px; margin-bottom: 20px; display: flex; flex-direction: column; gap: 15px;">
+                    <!-- Mesajele vor apărea aici -->
+                    <div class="ai-msg" style="background: #111; padding: 12px 15px; border-radius: 12px; border-left: 3px solid #fff; max-width: 85%;">
+                        Salut! Sunt asistentul tău de recuperare. Spune-mi, ce te doare sau ce disconfort ai astăzi?
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 10px;">
+                    <input type="text" id="recovery-chat-input" class="modern-input" placeholder="Ex: Mă doare umărul drept după împins..." style="flex: 1;">
+                    <button id="btn-send-recovery" class="btn-primary" style="padding: 0 25px;"><i class="fas fa-paper-plane"></i></button>
+                </div>
             </div>
         </div>
     </main>
