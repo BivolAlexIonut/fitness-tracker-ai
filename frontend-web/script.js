@@ -129,6 +129,9 @@ document.addEventListener('DOMContentLoaded', () => {
     if (workoutForm) {
         workoutForm.onsubmit = async (e) => {
             e.preventDefault();
+            const btn = workoutForm.querySelector('.btn-save');
+            btn.classList.add('btn-loading');
+
             const workoutData = {
                 type: document.getElementById('w-type').value,
                 duration: parseInt(document.getElementById('w-duration').value),
@@ -150,10 +153,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     loadWorkoutHistory();
                 }
             } catch (error) { alert("Eroare de conexiune la salvare."); }
+            finally { btn.classList.remove('btn-loading'); }
         };
     }
 
-    // --- 5. PERSONAL RECORDS (PR) & AI ANALYTICS ---
+    // --- 5. PERSONAL RECORDS (high-contrast PRs) ---
     const btnSavePR = document.getElementById('btn-save-pr');
     let prChartInstance = null;
 
@@ -167,6 +171,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 alert("Introdu greutatea și repetările!");
                 return;
             }
+
+            btnSavePR.classList.add('btn-loading');
 
             const prData = {
                 exerciseName: exercise,
@@ -188,6 +194,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     loadPRAnalytics(exercise);
                 }
             } catch (e) { console.error("Eroare salvare PR:", e); }
+            finally { btnSavePR.classList.remove('btn-loading'); }
         };
     }
 
@@ -250,11 +257,18 @@ document.addEventListener('DOMContentLoaded', () => {
             data: {
                 labels: history.map(h => new Date(h.date).toLocaleDateString()),
                 datasets: [
-                    { label: 'Real (kg)', data: history.map(h => h.weight), borderColor: '#3498db', tension: 0.1 },
-                    { label: 'AI Trend (Grad 2)', data: trendData, borderColor: '#e74c3c', borderDash: [5, 5], fill: false }
+                    { label: 'Real (kg)', data: history.map(h => h.weight), borderColor: '#ffffff', tension: 0.1, backgroundColor: 'rgba(255,255,255,0.1)', fill: true },
+                    { label: 'AI Trend', data: trendData, borderColor: '#888888', borderDash: [5, 5], fill: false }
                 ]
             },
-            options: { responsive: true, plugins: { legend: { labels: { color: '#fff' } } } }
+            options: { 
+                responsive: true, 
+                plugins: { legend: { labels: { color: '#fff' } } },
+                scales: {
+                    x: { ticks: { color: '#888' }, grid: { color: '#222' } },
+                    y: { ticks: { color: '#888' }, grid: { color: '#222' } }
+                }
+            }
         });
     }
 
@@ -280,6 +294,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
+            btnSaveHealth.classList.add('btn-loading');
+
             const metricsData = {
                 hrv: parseInt(hrv),
                 sleepHours: parseFloat(sleep),
@@ -299,6 +315,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     loadHealthMetrics();
                 }
             } catch (e) { console.error("Eroare salvare metrici:", e); }
+            finally { btnSaveHealth.classList.remove('btn-loading'); }
         };
     }
 
@@ -344,7 +361,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 labels: sortedMetrics.map(m => new Date(m.date).toLocaleDateString('ro-RO')),
                 datasets: [
                     { label: 'HRV (ms)', data: sortedMetrics.map(m => m.hrv), borderColor: '#2ecc71', tension: 0.1 },
-                    { label: 'Somn (ore)', data: sortedMetrics.map(m => m.sleepHours), borderColor: '#9b59b6', tension: 0.1 },
+                    { label: 'Somn (ore)', data: sortedMetrics.map(m => m.sleepHours), borderColor: '#3498db', tension: 0.1 },
                     { label: 'Stres', data: sortedMetrics.map(m => m.stressLevel), borderColor: '#e74c3c', tension: 0.1 }
                 ]
             },
@@ -354,8 +371,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     legend: { labels: { color: '#fff' } } 
                 },
                 scales: {
-                    x: { ticks: { color: '#ccc' } },
-                    y: { ticks: { color: '#ccc' } }
+                    x: { ticks: { color: '#888' }, grid: { color: '#222' } },
+                    y: { ticks: { color: '#888' }, grid: { color: '#222' } }
                 }
             }
         });
@@ -366,6 +383,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (btnPredict) {
         btnPredict.onclick = async () => {
             const summary = document.getElementById('ai-summary');
+            btnPredict.classList.add('btn-loading');
             try {
                 // Endpoint corectat pentru port 8080 care apelează intern AI-ul pe 8006
                 const res = await fetch(`${API_BASE}/ai/prediction?userId=${user.id}`);
@@ -375,6 +393,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     document.getElementById('ai-recommendation').innerText = data.recommendation || "";
                 }
             } catch (e) { summary.innerText = "Eroare AI."; }
+            finally { btnPredict.classList.remove('btn-loading'); }
         };
     }
 
@@ -384,6 +403,7 @@ document.addEventListener('DOMContentLoaded', () => {
         btnAnalyzeMeal.onclick = async () => {
             const desc = document.getElementById('meal-input').value;
             const feedbackBox = document.getElementById('meal-feedback');
+            btnAnalyzeMeal.classList.add('btn-loading');
             try {
                 const res = await fetch(`${API_BASE}/meals/analyze?userId=${user.id}`, {
                     method: 'POST',
@@ -396,6 +416,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     feedbackBox.innerText = `Calorii: ${data.calories} | Feedback: ${data.feedback}`;
                 }
             } catch (e) { console.error(e); }
+            finally { btnAnalyzeMeal.classList.remove('btn-loading'); }
         };
     }
 
@@ -405,6 +426,7 @@ document.addEventListener('DOMContentLoaded', () => {
         btnAnalyzeRec.onclick = async () => {
             const sore = document.getElementById('sore-parts').value;
             const feedbackBox = document.getElementById('recovery-feedback');
+            btnAnalyzeRec.classList.add('btn-loading');
             try {
                 const res = await fetch(`${API_BASE}/recovery/analyze?userId=${user.id}`, {
                     method: 'POST',
@@ -417,6 +439,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     feedbackBox.innerText = data.protocol || data.feedback;
                 }
             } catch (e) { console.error(e); }
+            finally { btnAnalyzeRec.classList.remove('btn-loading'); }
         };
     }
 });
