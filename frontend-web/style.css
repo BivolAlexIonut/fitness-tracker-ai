@@ -1,17 +1,14 @@
-/* ==========================================
-   1. VARIABILE & SETĂRI GLOBALE (FUTURISTIC THEME)
-   ========================================== */
    :root {
-    --bg-base: #050507; /* Negru foarte adânc */
-    --bg-card: rgba(18, 18, 22, 0.75); /* Fundal semi-transparent pentru efectul de sticlă */
-    --accent-neon: #00ff88; /* Verde Neon Futuristic */
-    --accent-hover: #00cc6a;
-    --accent-glow: rgba(0, 255, 136, 0.25);
-    --blue-neon: #00e5ff; /* Albastru electric pentru elemente secundare */
+    --bg-base: #000000; /* Negru pur */
+    --bg-card: #0a0a0a; /* Fundal card negru intens */
+    --accent-main: #ffffff; /* Alb pentru accente */
+    --accent-hover: #e0e0e0;
+    --accent-glow: rgba(255, 255, 255, 0.2);
+    --secondary-gray: #333333;
     --text-main: #ffffff;
-    --text-muted: #8a8a93;
-    --border-color: rgba(255, 255, 255, 0.08);
-    --border-glow: rgba(0, 255, 136, 0.4);
+    --text-muted: #a0a0a0;
+    --border-color: #222222;
+    --border-glow: rgba(255, 255, 255, 0.15);
 }
 
 * {
@@ -25,15 +22,13 @@ body {
     background-color: var(--bg-base);
     color: var(--text-main);
     overflow-x: hidden;
-    /* Un pattern subtil pe fundal pentru a arăta mai "tehnic" */
-    background-image: radial-gradient(circle at 50% 0%, #11111a 0%, var(--bg-base) 70%);
 }
 
-/* Scrollbar personalizat (Futurist) */
+/* Scrollbar personalizat (Black & White) */
 ::-webkit-scrollbar { width: 8px; }
 ::-webkit-scrollbar-track { background: var(--bg-base); }
 ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
-::-webkit-scrollbar-thumb:hover { background: var(--accent-neon); }
+::-webkit-scrollbar-thumb:hover { background: #555; }
 
 /* ==========================================
    2. LAYOUT PRINCIPAL (DASHBOARD)
@@ -53,8 +48,7 @@ body {
    ========================================== */
 .header {
     grid-area: header;
-    background: rgba(10, 10, 12, 0.8);
-    backdrop-filter: blur(15px);
+    background: #000;
     border-bottom: 1px solid var(--border-color);
     display: flex;
     justify-content: space-between;
@@ -72,25 +66,23 @@ body {
     gap: 12px;
     text-transform: uppercase;
     color: #fff;
-    text-shadow: 0 0 10px rgba(255,255,255,0.2);
 }
 
-.logo i { color: var(--accent-neon); }
+.logo i { color: #fff; }
 
 .ai-badge {
-    background: transparent;
-    color: var(--accent-neon);
+    background: #fff;
+    color: #000;
     font-size: 11px;
     padding: 3px 8px;
     border-radius: 4px;
-    border: 1px solid var(--accent-neon);
-    box-shadow: 0 0 8px var(--accent-glow);
+    border: 1px solid #fff;
     font-weight: bold;
     letter-spacing: 2px;
 }
 
 .user-pill {
-    background: rgba(255, 255, 255, 0.03);
+    background: #111;
     padding: 8px 20px;
     border-radius: 30px;
     border: 1px solid var(--border-color);
@@ -110,15 +102,14 @@ body {
     transition: all 0.3s;
     margin-left: 20px;
 }
-.btn-logout:hover { color: #ff3366; text-shadow: 0 0 10px rgba(255, 51, 102, 0.5); }
+.btn-logout:hover { color: #fff; }
 
 /* ==========================================
    4. SIDEBAR
    ========================================== */
 .sidebar {
     grid-area: sidebar;
-    background: rgba(10, 10, 12, 0.5);
-    backdrop-filter: blur(10px);
+    background: #050505;
     border-right: 1px solid var(--border-color);
     padding: 30px 20px;
     display: flex;
@@ -141,7 +132,7 @@ body {
     display: flex;
     align-items: center;
     gap: 15px;
-    transition: all 0.3s ease;
+    transition: all 0.2s ease;
     text-transform: uppercase;
     letter-spacing: 1px;
 }
@@ -149,22 +140,21 @@ body {
 .tab-btn i { width: 24px; text-align: center; font-size: 18px; }
 
 .tab-btn:hover {
-    background: rgba(255, 255, 255, 0.05);
+    background: #111;
     color: var(--text-main);
-    transform: translateX(5px);
 }
 
 .tab-btn.active {
-    background: linear-gradient(90deg, var(--accent-glow) 0%, transparent 100%);
-    border-left: 3px solid var(--accent-neon);
-    color: var(--accent-neon);
-    text-shadow: 0 0 8px var(--accent-glow);
+    background: #fff;
+    color: #000;
+    border-left: none;
+    text-shadow: none;
 }
 
 .btn-add-action {
-    background: var(--accent-neon);
+    background: #fff;
     color: #000;
-    border: none;
+    border: 1px solid #fff;
     padding: 16px;
     border-radius: 12px;
     font-weight: 800;
@@ -172,38 +162,34 @@ body {
     text-transform: uppercase;
     letter-spacing: 1px;
     cursor: pointer;
-    box-shadow: 0 0 15px var(--accent-glow);
     transition: all 0.3s ease;
 }
 
 .btn-add-action:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 0 25px var(--accent-glow);
-    background: #fff;
+    background: #000;
+    color: #fff;
 }
 
 /* ==========================================
-   5. MAIN CONTENT & CARDS (GLASSMORPHISM)
+   5. MAIN CONTENT & CARDS
    ========================================== */
 .content {
     grid-area: content;
     padding: 40px;
     overflow-y: auto;
     position: relative;
+    background: #000;
 }
 
 .card {
     background: var(--bg-card);
-    backdrop-filter: blur(20px);
     border: 1px solid var(--border-color);
-    border-radius: 20px;
+    border-radius: 12px;
     padding: 30px;
     margin-bottom: 30px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-    transition: transform 0.3s ease, border-color 0.3s ease;
 }
 
-.card:hover { border-color: rgba(255,255,255,0.15); }
+.card:hover { border-color: #444; }
 
 .card h2, .card h3 {
     margin-bottom: 10px;
@@ -212,31 +198,31 @@ body {
     display: flex;
     align-items: center;
     gap: 10px;
+    color: #fff;
 }
-.card h2 i, .card h3 i { color: var(--accent-neon); }
+.card h2 i, .card h3 i { color: #fff; }
 
 .subtitle { color: var(--text-muted); margin-bottom: 25px; font-size: 14px; }
 
-/* HERO CARD (Gradient Sci-Fi) */
+/* HERO CARD */
 .hero-card {
-    background: linear-gradient(135deg, rgba(0, 255, 136, 0.1) 0%, rgba(0, 229, 255, 0.05) 100%);
-    border: 1px solid var(--border-glow);
-    border-radius: 20px;
+    background: #111;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
     padding: 40px;
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 40px;
-    box-shadow: inset 0 0 20px rgba(0, 255, 136, 0.05), 0 10px 30px rgba(0,0,0,0.5);
 }
 
-.hero-content h2 { font-size: 32px; color: #fff; margin-bottom: 15px; text-shadow: 0 0 15px rgba(255,255,255,0.2); }
-#ai-recommendation { font-size: 16px; line-height: 1.6; color: var(--accent-neon); margin: 15px 0; font-weight: 500;}
+.hero-content h2 { font-size: 32px; color: #fff; margin-bottom: 15px; }
+#ai-recommendation { font-size: 16px; line-height: 1.6; color: #fff; margin: 15px 0; font-weight: 500;}
 
 .btn-ai-action {
-    background: transparent;
-    color: var(--blue-neon);
-    border: 2px solid var(--blue-neon);
+    background: #fff;
+    color: #000;
+    border: 1px solid #fff;
     padding: 16px 35px;
     border-radius: 12px;
     font-weight: 700;
@@ -244,17 +230,15 @@ body {
     letter-spacing: 2px;
     cursor: pointer;
     transition: all 0.3s;
-    box-shadow: 0 0 15px rgba(0, 229, 255, 0.2);
 }
 
 .btn-ai-action:hover {
-    background: var(--blue-neon);
-    color: #000;
-    box-shadow: 0 0 30px rgba(0, 229, 255, 0.5);
+    background: #000;
+    color: #fff;
 }
 
 /* ==========================================
-   6. FORMS & INPUTS (NEON STYLE)
+   6. FORMS & INPUTS
    ========================================== */
 .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
 .form-group { margin-bottom: 20px; }
@@ -271,11 +255,11 @@ label {
 
 .modern-input, .modern-select, .modern-textarea {
     width: 100%;
-    background: rgba(0, 0, 0, 0.4);
+    background: #000;
     border: 1px solid var(--border-color);
     color: #fff;
     padding: 16px;
-    border-radius: 12px;
+    border-radius: 8px;
     font-size: 15px;
     transition: all 0.3s;
     outline: none;
@@ -284,39 +268,62 @@ label {
 .modern-textarea { height: 120px; resize: none; }
 
 .modern-input:focus, .modern-select:focus, .modern-textarea:focus {
-    border-color: var(--accent-neon);
-    box-shadow: 0 0 10px var(--accent-glow);
-    background: rgba(0, 0, 0, 0.6);
+    border-color: #fff;
 }
 
 .btn-primary {
-    background: var(--accent-neon);
+    background: #fff;
     color: #000;
-    border: none;
+    border: 1px solid #fff;
     padding: 16px 30px;
-    border-radius: 12px;
+    border-radius: 8px;
     font-weight: 800;
     font-size: 14px;
     text-transform: uppercase;
     letter-spacing: 1px;
     cursor: pointer;
     transition: all 0.3s;
-    box-shadow: 0 0 15px var(--accent-glow);
 }
 
 .btn-primary:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 0 25px var(--accent-glow);
-    background: #fff;
+    background: #000;
+    color: #fff;
+}
+
+/* State de încărcare pentru butoane */
+.btn-loading {
+    position: relative;
+    color: transparent !important;
+    pointer-events: none;
+    background: #000 !important; /* Fundal negru forțat pentru contrast */
+    border: 1px solid #fff !important;
+}
+
+.btn-loading::after {
+    content: "";
+    position: absolute;
+    width: 22px;
+    height: 22px;
+    top: 50%;
+    left: 50%;
+    margin: -11px 0 0 -11px;
+    border: 3px solid rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    border-top-color: #ffffff; /* Spinner alb pe fundal negru */
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
 }
 
 /* Feedback Box AI */
 .feedback-box {
     margin-top: 30px;
     padding: 25px;
-    background: rgba(0, 255, 136, 0.05);
-    border-radius: 12px;
-    border-left: 4px solid var(--accent-neon);
+    background: #111;
+    border-radius: 8px;
+    border-left: 4px solid #fff;
     line-height: 1.6;
     font-size: 15px;
 }
@@ -336,19 +343,19 @@ th {
 }
 td { 
     padding: 18px 15px; 
-    border-bottom: 1px solid rgba(255,255,255,0.03); 
+    border-bottom: 1px solid var(--border-color); 
     font-size: 14px; 
-    color: #e0e0e0;
+    color: #fff;
 }
-tr:hover td { background: rgba(255,255,255,0.02); }
+tr:hover td { background: #0a0a0a; }
 
 .badge {
-    background: rgba(0, 255, 136, 0.1);
-    color: var(--accent-neon);
+    background: #222;
+    color: #fff;
     padding: 4px 10px;
-    border-radius: 6px;
+    border-radius: 4px;
     font-size: 12px;
-    border: 1px solid var(--accent-glow);
+    border: 1px solid #444;
 }
 
 /* ==========================================
@@ -358,27 +365,25 @@ tr:hover td { background: rgba(255,255,255,0.02); }
     display: none;
     position: fixed;
     top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0,0,0,0.8);
-    backdrop-filter: blur(10px);
+    background: rgba(0,0,0,0.9);
     z-index: 1000;
     align-items: center;
     justify-content: center;
 }
 
 .modal-card {
-    background: #0d0d12;
+    background: #000;
     width: 90%;
     max-width: 500px;
     padding: 40px;
-    border-radius: 20px;
-    border: 1px solid var(--border-glow);
-    box-shadow: 0 20px 50px rgba(0, 255, 136, 0.1);
+    border-radius: 12px;
+    border: 1px solid #333;
 }
 
-.btn-save { width: 100%; background: var(--accent-neon); color: #000; border: none; padding: 16px; border-radius: 12px; font-weight: 800; cursor: pointer; margin-top: 20px; box-shadow: 0 0 15px var(--accent-glow); transition: 0.3s; }
-.btn-save:hover { background: #fff; transform: scale(1.02); }
-.btn-cancel { width: 100%; background: transparent; color: var(--text-muted); border: 1px solid var(--border-color); padding: 16px; border-radius: 12px; cursor: pointer; margin-top: 10px; transition: 0.3s; }
-.btn-cancel:hover { background: rgba(255,255,255,0.05); color: #fff; }
+.btn-save { width: 100%; background: #fff; color: #000; border: 1px solid #fff; padding: 16px; border-radius: 8px; font-weight: 800; cursor: pointer; margin-top: 20px; transition: 0.3s; }
+.btn-save:hover { background: #000; color: #fff; }
+.btn-cancel { width: 100%; background: transparent; color: var(--text-muted); border: 1px solid var(--border-color); padding: 16px; border-radius: 8px; cursor: pointer; margin-top: 10px; transition: 0.3s; }
+.btn-cancel:hover { color: #fff; border-color: #fff; }
 
 /* ==========================================
    9. AUTH & ONBOARDING (PAGINI EXTERNE)
@@ -386,41 +391,41 @@ tr:hover td { background: rgba(255,255,255,0.02); }
 .auth-card, .onboarding-card {
     width: 100%;
     max-width: 450px;
-    background: rgba(15, 15, 20, 0.85);
+    background: #0a0a0a;
     padding: 50px 40px;
-    border-radius: 24px;
-    border: 1px solid var(--border-color);
-    box-shadow: 0 20px 60px rgba(0,0,0,0.8), inset 0 0 20px rgba(255,255,255,0.02);
-    backdrop-filter: blur(20px);
+    border-radius: 12px;
+    border: 1px solid #222;
     position: relative;
     overflow: hidden;
 }
 
-/* O linie subtilă luminoasă deasupra cardurilor de login */
-.auth-card::before, .onboarding-card::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0; height: 2px;
-    background: linear-gradient(90deg, transparent, var(--accent-neon), transparent);
-}
+.brand-logo h1 { color: #fff; font-size: 2rem; margin: 0; letter-spacing: 3px; text-transform: uppercase; }
 
-.brand-logo h1 { color: #fff; font-size: 2rem; margin: 0; letter-spacing: 3px; text-transform: uppercase; text-shadow: 0 0 20px var(--accent-glow); }
-
-.auth-toggle { display: grid; grid-template-columns: 1fr 1fr; background: rgba(0,0,0,0.5); border-radius: 12px; margin-bottom: 30px; padding: 5px; border: 1px solid var(--border-color); }
-.auth-toggle button { background: none; border: none; color: var(--text-muted); padding: 12px; cursor: pointer; font-weight: 700; transition: 0.3s; border-radius: 8px; font-size: 13px; letter-spacing: 1px; }
-.auth-toggle button.active { background: var(--accent-neon); color: #000; box-shadow: 0 0 15px var(--accent-glow); }
+.auth-toggle { display: grid; grid-template-columns: 1fr 1fr; background: #000; border-radius: 8px; margin-bottom: 30px; padding: 5px; border: 1px solid #222; }
+.auth-toggle button { background: none; border: none; color: var(--text-muted); padding: 12px; cursor: pointer; font-weight: 700; transition: 0.3s; border-radius: 6px; font-size: 13px; letter-spacing: 1px; }
+.auth-toggle button.active { background: #fff; color: #000; }
 
 .step-indicator { display: flex; gap: 10px; margin-bottom: 40px; }
-.step { flex: 1; height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; transition: 0.3s; }
-.step.active { background: var(--accent-neon); box-shadow: 0 0 10px var(--accent-glow); }
+.step { flex: 1; height: 4px; background: #222; border-radius: 2px; transition: 0.3s; }
+.step.active { background: #fff; }
 
 .option-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 30px; }
-.option-card { background: rgba(0,0,0,0.4); border: 2px solid var(--border-color); padding: 25px 20px; border-radius: 16px; cursor: pointer; text-align: center; transition: all 0.3s; }
+.option-card { background: #000; border: 1px solid #222; padding: 25px 20px; border-radius: 12px; cursor: pointer; text-align: center; transition: all 0.2s; }
 .option-card h3 { margin: 0; font-size: 15px; color: #fff; font-weight: 600; }
-.option-card:hover { border-color: rgba(255,255,255,0.3); transform: translateY(-3px); }
-.option-card.selected { border-color: var(--accent-neon); background: rgba(0, 255, 136, 0.08); box-shadow: inset 0 0 15px var(--accent-glow); }
+.option-card:hover { border-color: #555; }
+.option-card.selected { border-color: #fff; background: #111; }
 
 .hidden { display: none !important; }
+
+@media (max-width: 768px) {
+    #grid-pagina {
+        grid-template-columns: 1fr;
+        grid-template-areas: "header" "content";
+    }
+    .sidebar { display: none; }
+    .hero-card { flex-direction: column; text-align: center; gap: 20px; }
+    .form-grid { grid-template-columns: 1fr; }
+}
 
 
 @media (max-width: 768px) {
