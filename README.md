@@ -114,26 +114,47 @@ Proiectul utilizează mai multe pattern-uri de design software pentru a asigura 
 
 ---
 
-## 🚀 Instalare și Configurare
+## 🚀 Instalare și Configurare (Metoda Recomandată: Docker)
 
-### 1. Baza de Date (MySQL)
-*   Creați o bază de date MySQL.
-*   Configurați datele de acces în `backend-java/app/src/main/resources/application.properties`.
+Aceasta este cea mai simplă și rapidă metodă de a rula aplicația, deoarece configurează automat toate serviciile (Frontend Nginx, Backend Java și AI Service Python) și le conectează între ele.
 
-### 2. AI Service (Python)
+### 1. Prerechizite
+*   **Docker Desktop** instalat și pornit.
+*   Un fișier `.env` creat în rădăcina proiectului cu următoarele chei (vezi exemplul de mai jos):
+    ```env
+    GEMINI_API_KEY=cheia_ta_google_gemini
+    DB_URL=jdbc:mysql://bvhrqkktla486dmkdpgr-mysql.services.clever-cloud.com:3306/bvhrqkktla486dmkdpgr
+    DB_USERNAME=ucfoxzfxeft0am4q
+    DB_PASSWORD=parola_ta
+    ```
+
+### 2. Lansare Rapidă
+Deschide un terminal în folderul principal al proiectului și rulează:
+```bash
+docker compose up --build
+```
+Aplicația va fi disponibilă imediat la adresa: **[http://localhost](http://localhost)**
+
+---
+
+## 🛠️ Rulare Manuală (Dezvoltare)
+
+Dacă dorești să rulezi serviciile separat pentru debugging:
+
+### 1. AI Service (Python)
 ```bash
 cd ai-service-python
 pip install -r requirements.txt
-# Configurați GEMINI_API_KEY în .env
 python main.py
 ```
 
-### 3. Backend (Java)
+### 2. Backend (Java)
 ```bash
 cd backend-java/app
 mvn clean install
 mvn spring-boot:run
 ```
+
 
 ---
 
