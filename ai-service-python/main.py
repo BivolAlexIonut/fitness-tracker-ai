@@ -11,8 +11,8 @@ from typing import List, Optional
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 
-# Fix pentru caractere românești în consola Windows
-if sys.platform == "win32":
+# Fix pentru caractere românești în consola Windows (dezactivat în timpul testelor)
+if sys.platform == "win32" and "pytest" not in sys.modules:
     import io
     sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
     sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8')
