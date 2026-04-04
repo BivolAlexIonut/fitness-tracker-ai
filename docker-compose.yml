@@ -1,27 +1,39 @@
 version: '3.8'
 
 services:
-  # 1. Baza de date relațională pentru Java (ORM)
-  db:
-    image: mysql:8.0
-    container_name: fitness_mysql
-    restart: always
-    environment:
-      MYSQL_DATABASE: fitness_app_db
-      MYSQL_ROOT_PASSWORD: rootpassword
-    ports:
-      - "3306:3306"
-    volumes:
-      - db_data:/var/lib/mysql
-
-  # 2. Serviciul de Inteligență Artificială (Python) - pregătit pentru viitor
+  # 1. Serviciul de AI (Python)
   ai-service:
     build: ./ai-service-python
-    container_name: fitness_ai_python
+    container_name: athletica-ai-python
     ports:
-      - "8005:8005"
-    depends_on:
-      - db
+      - "8006:8006"
+    # Citim cheia de AI din .env din root
+    environment:
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+    restart: always
 
-volumes:
-  db_data:
+  # 2. Backend-ul Java (Spring Boot)
+  java-backend:
+    build: ./backend-java/app
+    container_name: athletica-ai-java
+    ports:
+      - "8080:8080"
+    depends_on:
+      - ai-service
+    environment:
+      - DOCKER_ENV=true
+      - SPRING_DATASOURCE_URL=${DB_URL}
+      - SPRING_DATASOURCE_USERNAME=${DB_USERNAME}
+      - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}
+      - AI_SERVICE_URL=http://ai-service:8006/predict
+    restart: always
+
+  # 3. Frontend-ul (Nginx)
+  frontend:
+    image: nginx:alpine
+    container_name: athletica-ai-frontend
+    ports:
+      - "80:80"
+    volumes:
+      - ./frontend-web:/usr/share/nginx/html
+    restart: always

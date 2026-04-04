@@ -14,7 +14,11 @@ import java.io.File;
 public class FitnessTrackerApplication {
 
     public static void main(String[] args) {
-        startAIService();
+        if (System.getenv("DOCKER_ENV") == null) {
+            startAIService();
+        } else {
+            System.out.println("[JAVA] Rulăm în Docker. Serviciul AI este gestionat extern.");
+        }
         SpringApplication.run(FitnessTrackerApplication.class, args);
     }
 
@@ -41,7 +45,7 @@ public class FitnessTrackerApplication {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**") // Permite toate rutele
-                        .allowedOrigins("http://localhost:3000", "http://localhost:5173") // Porturile standard de React/Vite
+                        .allowedOrigins("http://localhost", "http://127.0.0.1", "http://localhost:80", "http://localhost:3000", "http://localhost:5173")
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS");
             }
         };
