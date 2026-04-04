@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: [ "main" ]
 
+env:
+  # Elimina warning-ul despre Node.js 20
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   # 1. Job pentru testele de Python (AI Service)
   test-python:
@@ -57,9 +61,9 @@ jobs:
 
       - name: Build AI Service Image
         run: |
-          # Daca Dockerfile este in interiorul contextului, nu mai avem nevoie de parametrul --file
-          docker build -t athletica-ai-python:latest ./ai-service-python
+          # Folosim calea explicita catre Dockerfile (case-sensitive pe Linux/GitHub)
+          docker build -t athletica-ai-python:latest -f ai-service-python/Dockerfile ai-service-python
 
       - name: Build Java Backend Image
         run: |
-          docker build -t athletica-ai-java:latest ./backend-java/app
+          docker build -t athletica-ai-java:latest -f backend-java/app/Dockerfile backend-java/app
