@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: [ "main" ]
 
+env:
+  # Elimina warning-ul despre Node.js 20
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   # 1. Job pentru testele de Python (AI Service)
   test-python:
@@ -49,7 +53,6 @@ jobs:
           ./mvnw test
 
   # 3. Job pentru verificarea Build-ului Docker
-  # Se ruleaza doar daca testele de Python si Java trec (needs)
   docker-build-check:
     needs: [test-python, test-java]
     runs-on: ubuntu-latest
@@ -57,7 +60,14 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Build AI Service Image
-        run: docker build ./ai-service-python --file ./ai-service-python/Dockerfile --tag athletica-ai-python:latest
+        run: |
+          # Schimbam folderul de lucru direct la serviciu
+          cd ai-service-python
+          docker build -t athletica-ai-python:latest .
 
       - name: Build Java Backend Image
-        run: docker build ./backend-java/app --file ./backend-java/app/Dockerfile --tag athletica-ai-java:latest
+        run: |
+          # Schimbam folderul de lucru direct la backend
+          cd backend-java/app
+          docker build -t athletica-ai-java:latest .
+        # In Dockerfile-ul tau din backend-java/app, ai COPY src ./src, deci contextul trebuie sa fie acest folder.
