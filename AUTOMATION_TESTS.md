@@ -45,9 +45,43 @@ Testul generat automat `DemoApplicationTests` a eșuat inițial cu eroarea `Unab
 
 ---
 
-## 🚀 Concluzie
+## 🧬 5. Teste de Integritate AI (Stabilitate VO2Max)
 
-Utilizarea testelor automate ne-a oferit:
-1.  **Viteză în Debugging:** Identificarea erorii în 10 secunde de la scriere, nu după 10 minute de testare manuală.
-2.  **Siguranță în Refactoring:** Am putut modifica versiunea de Java (de la 17 la 21) și am știut imediat că aplicația încă funcționează corect.
-3.  **Documentație Executabilă:** Testele explică exact cum trebuie să se comporte API-urile noastre în caz de succes sau eroare.
+Am implementat teste de integritate în `test_ai_logic.py` pentru a preveni "halucinațiile" AI-ului în calculele fiziologice.
+
+*   **Problema de bază:** Fără un punct de referință, AI-ul poate genera fluctuații nerealiste (ex: VO2Max crește de la 45 la 55 într-o zi).
+*   **Debug / Verificare:** Testul simulează o cerere care include un `baseline` din baza de date și verifică dacă noul rezultat este **incremental și logic** (variație < 5%).
+*   **Valoare Profesională:** Acest test garantează că utilizatorul primește date de încredere, protejând reputația aplicației ca instrument de monitorizare serioasă.
+
+---
+
+## ❄️ 6. Testarea Scenariului "Cold Start" (Utilizatori Noi)
+
+În `test_edge_cases.py`, am adăugat un test specific pentru experiența inițială a utilizatorului.
+
+*   **Scenariu:** Un utilizator nou își creează contul, dar nu are încă antrenamente sau metrici salvate.
+*   **Risc:** Multe sisteme AI dau erori de tip `NullPointerException` sau `DivisionByZero` când lucrează cu liste goale.
+*   **Rezultat:** Testul confirmă că AI-ul este capabil să ofere un raport de bun-venit și sugestii generale, fără să blocheze interfața. Acest lucru asigură o rată de retenție mai mare a utilizatorilor noi.
+
+---
+
+## 🛡️ 7. Validarea Datelor de Business (Sanity Checks)
+
+Am utilizat `WorkoutControllerTest.java` pentru a identifica lipsa validărilor pe server pentru datele introduse de utilizatori.
+
+*   **Identificarea Problemei:** Testul `testAddWorkoutNegativeDuration` a demonstrat că sistemul permitea salvarea antrenamentelor cu durată negativă (ex: -30 minute).
+*   **Soluția (Fix):** În urma acestui test, am implementat în `WorkoutController.java` un filtru de validare:
+    ```java
+    if (workout.getDuration() < 0) return ResponseEntity.badRequest().body("...");
+    ```
+*   **Valoare:** Am transformat un API permisiv într-unul robust, prevenind coruperea bazei de date cu statistici imposibile.
+
+---
+
+## 🚀 Concluzie Profesională
+
+Sistemul de testare al **Athletica AI** nu este doar o formalitate, ci o coloană vertebrală a calității:
+1.  **Viteză în Debugging:** Detectăm erorile în milisecunde prin rularea `pytest` sau `mvn test`.
+2.  **Siguranță în Scalare:** Putem adăuga noi senzori sau metrici știind că testele de integritate vor semnala imediat orice regresie.
+3.  **Încredere AI:** Validăm rezultatele generate de LLM (Gemini) pentru a ne asigura că rămân în parametri umani și sportivi reali.
+

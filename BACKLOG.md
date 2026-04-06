@@ -4,6 +4,13 @@ Acest document conține lista de funcționalități planificate și starea imple
 
 ## 🟢 Finalizate (Implementate)
 
+### 🎨 UI/UX Design (Monochrome)
+- **Sarcini:**
+  - [x] Tema Monochrome (Black & White) - *Design profesional*
+  - [x] Efecte de încărcare (Loading spinners)
+  - [x] Formatare avansată a răspunsurilor AI (Liste, Monospace)
+  - [x] Design nou pentru secțiunea "Nivel Fitness" (Metrics Grid)
+
 ### 👤 Autentificare & Onboarding
 - **User Story:** Ca utilizator, vreau să-mi creez un cont și să-mi definesc profilul fizic pentru a primi sfaturi personalizate.
 - **Sarcini:** 
@@ -36,11 +43,11 @@ Acest document conține lista de funcționalități planificate și starea imple
 
 ## 🟡 În Lucru (In Progress)
 
-### 🎨 UI/UX Polishing
+### 📈 Vizualizare Avansată
+- **User Story:** Ca utilizator, vreau să văd grafice evolutive pentru a înțelege trendurile pe termen lung.
 - **Sarcini:**
-  - [/] Tema Monochrome (Black & White) - *Aproape gata*
-  - [/] Efecte de încărcare (Loading spinners)
-  - [ ] Formatare avansată a răspunsurilor AI (Liste, Bold)
+  - [/] Grafic evoluție PR-uri (Trendline AI)
+  - [ ] Grafic comparativ HRV vs Stress pe 30 de zile
 
 ---
 
@@ -48,8 +55,10 @@ Acest document conține lista de funcționalități planificate și starea imple
 
 ### 🧪 Testare & Calitate (Cerință Proiect)
 - **Sarcini:**
-  - [ ] Implementare Teste Unitare în Java (JUnit)
-  - [ ] Implementare Teste Unitare în Python (Pytest)
+  - [x] Implementare Teste Unitare în Java (JUnit) - *Validare Controller & Business Logic*
+  - [x] Implementare Teste Unitare în Python (Pytest) - *Validare Algoritmi AI & Edge Cases*
+  - [x] Teste de Integritate AI (Stabilitate VO2Max)
+  - [x] Documentație completă de Debugging & Testare (AUTOMATION_TESTS.md)
 
 ### 📈 Vizualizare Avansată
 - **User Story:** Ca utilizator, vreau să văd grafice evolutive pentru a înțelege trendurile pe termen lung.

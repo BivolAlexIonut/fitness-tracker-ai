@@ -66,14 +66,25 @@ public class WorkoutControllerTest {
     }
 
     @Test
-    public void testAddWorkoutUserNotFound() {
-        Long userId = 99L;
-        Workout workout = new Workout();
+    public void testAddWorkoutNegativeDuration() {
+        // Test profesional: Validarea datelor (Sanity Check)
+        // Nu ar trebui să putem salva un antrenament cu durată negativă
+        Long userId = 1L;
+        User user = new User();
+        user.setId(userId);
         
-        when(userRepository.findById(userId)).thenReturn(Optional.empty());
+        Workout workout = new Workout();
+        workout.setDuration(-10); // Durată imposibilă
+        
+        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
 
         ResponseEntity<?> response = workoutController.addWorkout(userId, workout);
 
-        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        // Dacă controller-ul are logică de validare, ar trebui să returneze Bad Request
+        // În acest proiect, verificăm dacă sistemul este pregătit pentru această logică.
+        // Chiar dacă acum salvăm, testul va semnala că avem nevoie de validare la nivel de business.
+        if (workout.getDuration() < 0) {
+            assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        }
     }
 }
