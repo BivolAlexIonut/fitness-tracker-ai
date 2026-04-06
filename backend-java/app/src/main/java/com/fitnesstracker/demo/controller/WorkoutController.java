@@ -4,6 +4,7 @@ import com.fitnesstracker.demo.model.User;
 import com.fitnesstracker.demo.model.Workout;
 import com.fitnesstracker.demo.repository.UserRepository;
 import com.fitnesstracker.demo.repository.WorkoutRepository;
+import com.fitnesstracker.demo.service.AIService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -26,6 +27,9 @@ public class WorkoutController {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private AIService aiService;
+
     @org.springframework.beans.factory.annotation.Value("${ai.service.url}")
     private String aiServiceBaseUrl;
 
@@ -36,6 +40,10 @@ public class WorkoutController {
             workout.setUser(userOpt.get());
             if (workout.getDate() == null) workout.setDate(LocalDateTime.now());
             workoutRepository.save(workout);
+
+            // Trigger fitness level update asincron
+            triggerFitnessSummaryUpdate(userOpt.get());
+
             return ResponseEntity.ok("Workout logged successfully");
         }
         return ResponseEntity.notFound().build();
@@ -60,6 +68,18 @@ public class WorkoutController {
             return ResponseEntity.ok(restTemplate.postForObject(url, aiRequest, Map.class));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Eroare la extragerea PR-urilor.");
+        }
+    }
+
+    private void triggerFitnessSummaryUpdate(User user) {
+        try {
+            // Apelăm AI pentru a obține rezumatul de fitness
+            Map<String, Object> aiResponse = aiService.getFitnessSummary(user);
+
+            // Actualizăm baza de date cu noile date (dacă AI spune că trebuie update)
+            aiService.updateFitnessLevel(user, aiResponse);
+        } catch (Exception e) {
+            System.out.println("[WorkoutController] Eroare la update fitness level: " + e.getMessage());
         }
     }
 }

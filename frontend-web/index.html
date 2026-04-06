@@ -21,6 +21,7 @@
         <div class="nav-group">
             <button class="tab-btn active" data-target="dashboard-section"><i class="fas fa-th-large"></i> Dashboard</button>
             <button class="tab-btn" data-target="health-section"><i class="fas fa-heartbeat"></i> Sănătate Zi</button>
+            <button class="tab-btn" data-target="fitness-level-section"><i class="fas fa-dumbbell"></i> Nivel Fitness</button>
             <button class="tab-btn" data-target="pr-section"><i class="fas fa-chart-line"></i> Recorduri (PR)</button>
             <button class="tab-btn" data-target="nutri-section"><i class="fas fa-utensils"></i> Nutriție AI</button>
             <button class="tab-btn" data-target="recovery-section"><i class="fas fa-medkit"></i> Recuperare</button>
@@ -47,7 +48,7 @@
                 <div id="ai-workout-result" class="feedback-box" style="display:none; margin-top: 20px;">
                     <h4 id="ai-w-name" style="color: #fff; margin-bottom: 10px; border-bottom: 1px solid #333; padding-bottom: 5px;"></h4>
                     <div id="ai-w-exercises" style="white-space: pre-wrap; font-family: monospace; color: #ccc; margin-bottom: 15px;"></div>
-                    <div style="font-size: 0.9rem; font-style: italic; color: #888; border-top: 1px solid #333; pt-10; margin-top: 10px;">
+                    <div style="font-size: 0.9rem; font-style: italic; color: #888; border-top: 1px solid #333; padding-top: 10px; margin-top: 10px;">
                         <strong>Note AI:</strong> <span id="ai-w-notes"></span>
                     </div>
                 </div>
@@ -67,6 +68,68 @@
                     </thead>
                     <tbody id="workout-history-body"></tbody>
                 </table>
+            </div>
+        </div>
+
+        <div id="fitness-level-section" class="tab-content" style="display:none">
+            <div class="card">
+                <h2 class="section-title"><i class="fas fa-chart-line"></i> Analiza Performanței AI</h2>
+                <p class="section-subtitle">Evoluția nivelului tău de fitness bazată pe activitatea recentă.</p>
+                
+                <div id="fitness-loading" style="text-align: center; padding: 40px 0; display:none;">
+                    <div class="spinner"></div>
+                    <p style="color: #888; margin-top: 15px;">AI-ul îți analizează progresul...</p>
+                </div>
+
+                <div id="fitness-summary" style="display:none;">
+                    <div class="fitness-metrics-grid">
+                        <div class="f-metric-card main">
+                            <span class="f-label">VO2 MAX ESTIMAT</span>
+                            <span id="fitness-vo2" class="f-value">--</span>
+                            <span class="f-unit">ml/kg/min</span>
+                        </div>
+                        <div class="f-metric-card main">
+                            <span class="f-label">BODY BATTERY</span>
+                            <span id="fitness-battery" class="f-value">--</span>
+                            <span class="f-unit">%</span>
+                        </div>
+                        <div class="f-metric-card">
+                            <span class="f-label">SCOR FITNESS</span>
+                            <span id="fitness-score" class="f-value small">--</span>
+                        </div>
+                        <div class="f-metric-card">
+                            <span class="f-label">CATEGORIE</span>
+                            <span id="fitness-category" class="f-value small">--</span>
+                        </div>
+                    </div>
+
+                    <div class="summary-details-grid">
+                        <div class="detail-panel">
+                            <h3><i class="fas fa-running"></i> Predicții Alergare</h3>
+                            <div class="detail-row"><span>5K</span> <strong id="fitness-5k">--</strong></div>
+                            <div class="detail-row"><span>10K</span> <strong id="fitness-10k">--</strong></div>
+                            <div class="detail-row"><span>Maraton</span> <strong id="fitness-marathon">--</strong></div>
+                        </div>
+                        <div class="detail-panel">
+                            <h3><i class="fas fa-dumbbell"></i> Estimări Forță (1RM)</h3>
+                            <div class="detail-row"><span>Push-ups</span> <strong id="fitness-pushup">--</strong></div>
+                            <div class="detail-row"><span>Pull-ups</span> <strong id="fitness-pullup">--</strong></div>
+                            <div class="detail-row"><span>Bench Press</span> <strong id="fitness-bench">--</strong></div>
+                            <div class="detail-row"><span>Deadlift</span> <strong id="fitness-deadlift">--</strong></div>
+                        </div>
+                    </div>
+
+                    <div class="ai-insights-container">
+                        <div class="insight-block">
+                            <h4><i class="fas fa-microchip"></i> AI Insights</h4>
+                            <p id="fitness-insights">Se analizează datele...</p>
+                        </div>
+                        <div class="insight-block">
+                            <h4><i class="fas fa-balance-scale"></i> Forță și Slăbiciuni</h4>
+                            <p id="fitness-strengths">Se analizează datele...</p>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -174,7 +237,7 @@
                     <h4 id="ai-m-name" style="color: #fff; margin-bottom: 10px; border-bottom: 1px solid #333; padding-bottom: 5px;"></h4>
                     <div id="ai-m-recipe" style="white-space: pre-wrap; color: #ccc; margin-bottom: 15px;"></div>
                     <div id="ai-m-nutri" style="font-weight: bold; color: #fff; margin-bottom: 10px;"></div>
-                    <div style="font-size: 0.9rem; font-style: italic; color: #888; border-top: 1px solid #333; pt-10; margin-top: 10px;">
+                    <div style="font-size: 0.9rem; font-style: italic; color: #888; border-top: 1px solid #333; padding-top: 10px; margin-top: 10px;">
                         <strong>Logica AI:</strong> <span id="ai-m-reasoning"></span>
                     </div>
                 </div>
