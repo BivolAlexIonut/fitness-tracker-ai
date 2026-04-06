@@ -35,6 +35,10 @@ public class WorkoutController {
 
     @PostMapping("/add")
     public ResponseEntity<?> addWorkout(@RequestParam Long userId, @RequestBody Workout workout) {
+        if (workout.getDuration() < 0) {
+            return ResponseEntity.badRequest().body("Durata antrenamentului nu poate fi negativă.");
+        }
+
         Optional<User> userOpt = userRepository.findById(userId);
         if (userOpt.isPresent()) {
             workout.setUser(userOpt.get());

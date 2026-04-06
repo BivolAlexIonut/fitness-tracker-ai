@@ -16,10 +16,21 @@ Athletica AI este o aplicație full-stack modernă concepută pentru monitorizar
 *   **Nutri-Coach AI:** Generator de mese și analiză nutrițională bazată pe ingrediente disponibile.
 *   **Protocol de Recuperare:** Chatbot interactiv pentru diagnosticarea disconfortului muscular și oferirea de protocoale.
 *   **Personal Trainer AI:** Generează antrenamente specifice (ex: CrossFit) bazate pe starea de oboseală și istoric.
+*   **Stabilized Fitness Analysis:** AI-ul folosește istoricul tău ca baseline (memorie) pentru a oferi actualizări realiste de VO2Max și forță, evitând fluctuațiile haotice.
 
 ### 📈 Monitorizare Sănătate și Activitate
 *   **Metrici Zilnice:** Înregistrarea HRV, somn, stres și puls.
 *   **Istoric Antrenamente:** Jurnal detaliat al activităților fizice.
+*   **Design Monochrome:** Interfață profesională Alb-Negru optimizată pentru concentrare.
+
+---
+
+## 🧪 Testare și Calitate (CI/CD)
+Proiectul include o suită de teste automate integrate cu **GitHub Actions**:
+*   **Integrity Tests:** Verifică matematic dacă AI-ul rămâne în parametri fiziologici reali.
+*   **Edge Case Tests:** Garantează funcționarea pentru utilizatorii noi (Cold Start).
+*   **Business Logic Tests:** Validări pe server (Java) pentru integritatea datelor.
+*   **Pytest & JUnit:** Testarea unitară a componentelor critice.
 
 ---
 
