@@ -4,6 +4,7 @@ import com.fitnesstracker.demo.model.MealLog;
 import com.fitnesstracker.demo.model.User;
 import com.fitnesstracker.demo.repository.MealRepository;
 import com.fitnesstracker.demo.repository.UserRepository;
+import com.fitnesstracker.demo.service.AIService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -25,6 +26,9 @@ public class MealController {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private AIService aiService;
 
     @org.springframework.beans.factory.annotation.Value("${ai.service.url}")
     private String aiServiceBaseUrl;
@@ -65,7 +69,10 @@ public class MealController {
                 
                 meal.setDate(LocalDateTime.now());
                 mealRepository.save(meal);
-                
+
+                // Trigger fitness level update asincron
+                triggerFitnessSummaryUpdate(user);
+
                 aiResponse.put("id", meal.getId());
                 return ResponseEntity.ok(aiResponse);
             } else {
@@ -92,4 +99,17 @@ public class MealController {
     public List<MealLog> getMealHistory(@RequestParam Long userId) {
         return mealRepository.findByUserIdOrderByDateDesc(userId);
     }
+
+    private void triggerFitnessSummaryUpdate(User user) {
+        try {
+            // Apelăm AI pentru a obține rezumatul de fitness
+            Map<String, Object> aiResponse = aiService.getFitnessSummary(user);
+
+            // Actualizăm baza de date cu noile date (dacă AI spune că trebuie update)
+            aiService.updateFitnessLevel(user, aiResponse);
+        } catch (Exception e) {
+            System.out.println("[MealController] Eroare la update fitness level: " + e.getMessage());
+        }
+    }
 }
+

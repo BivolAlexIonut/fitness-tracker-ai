@@ -11,50 +11,54 @@
             align-items: center;
             justify-content: center;
             min-height: 100vh;
-            background: radial-gradient(circle at center, #1a1a1a 0%, #050505 100%);
+            background: #000;
             margin: 0;
+            font-family: 'Inter', sans-serif;
         }
         .auth-card {
             width: 100%;
             max-width: 450px;
-            background: rgba(30, 30, 30, 0.9);
+            background: #0a0a0a;
             padding: 40px;
-            border-radius: 15px;
-            border: 1px solid rgba(0, 255, 136, 0.1);
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            border: 1px solid #222;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8);
         }
         .brand-logo {
             text-align: center;
             margin-bottom: 30px;
         }
         .brand-logo h1 {
-            color: var(--verde-ai);
+            color: #fff;
             font-size: 2rem;
             margin: 0;
-            letter-spacing: 2px;
+            letter-spacing: 4px;
             text-transform: uppercase;
+            font-weight: 900;
         }
         .auth-toggle {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            background: #252525;
+            background: #000;
             border-radius: 8px;
             margin-bottom: 30px;
             padding: 4px;
+            border: 1px solid #222;
         }
         .auth-toggle button {
             background: none;
             border: none;
-            color: #aaa;
-            padding: 10px;
+            color: #666;
+            padding: 12px;
             cursor: pointer;
-            font-weight: 600;
+            font-weight: 700;
             transition: 0.3s;
             border-radius: 6px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
         .auth-toggle button.active {
-            background: var(--verde-ai);
+            background: #fff;
             color: #000;
         }
         .form-row {
@@ -68,42 +72,45 @@
         }
         .form-group label {
             display: block;
-            font-size: 0.8rem;
+            font-size: 11px;
             color: #888;
             margin-bottom: 8px;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 1.5px;
+            font-weight: 600;
         }
         input, select {
             width: 100%;
-            padding: 12px;
-            background: #2a2a2a;
-            border: 1px solid #333;
+            padding: 14px;
+            background: #000;
+            border: 1px solid #222;
             border-radius: 6px;
             color: #fff;
             box-sizing: border-box;
-            transition: border-color 0.3s;
+            transition: all 0.3s;
+            outline: none;
         }
         input:focus {
-            outline: none;
-            border-color: var(--verde-ai);
+            border-color: #fff;
         }
         button[type="submit"] {
             width: 100%;
-            padding: 14px;
-            background: var(--verde-ai);
-            border: none;
+            padding: 16px;
+            background: #fff;
+            border: 1px solid #fff;
             border-radius: 6px;
             color: #000;
-            font-weight: 700;
-            font-size: 1rem;
+            font-weight: 800;
+            font-size: 14px;
             cursor: pointer;
             margin-top: 10px;
-            transition: transform 0.2s, box-shadow 0.2s;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 2px;
         }
         button[type="submit"]:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 255, 136, 0.3);
+            background: #000;
+            color: #fff;
         }
         .hidden { display: none; }
     </style>
@@ -111,7 +118,7 @@
 <body>
     <div class="auth-card">
         <div class="brand-logo">
-            <h1>Athletica AI</h1>
+            <h1>Athletica <span style="font-weight: 300; opacity: 0.7;">AI</span></h1>
         </div>
         
         <div class="auth-toggle">
@@ -247,7 +254,6 @@
                 body: JSON.stringify(data)
             });
             if (response.ok) { 
-                // După înregistrare, îl rugăm să se logheze ca să creăm sesiunea (localStorage)
                 alert('Înregistrare reușită! Te rugăm să te autentifici.'); 
                 toggleLogin.click(); 
             }
@@ -270,9 +276,7 @@
             });
             if (response.ok) {
                 const result = await response.json();
-                
                 localStorage.setItem('user', JSON.stringify(result));
-                
                 window.location.href = 'index.html';
             } else { 
                 alert('Email sau parolă incorectă.'); 

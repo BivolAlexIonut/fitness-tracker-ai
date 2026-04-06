@@ -1,5 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     console.log("--- ATHLETICA AI STARTUP ---");
+    console.log("API_BASE:", "http://127.0.0.1:8080/api");
 
     // --- 1. CONFIGURARE INIȚIALĂ ȘI SESIUNE ---
     const userStr = localStorage.getItem('user');
@@ -10,11 +11,22 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const userRaw = JSON.parse(userStr);
+    console.log("User Raw from Storage:", userRaw);
+
     const user = {
         ...userRaw,
         id: userRaw.id || userRaw.userId,
         userId: userRaw.userId || userRaw.id
     };
+    
+    if (!user.id) {
+        console.error("CRITIC: ID-ul utilizatorului lipsește din sesiune!", user);
+        alert("Eroare sesiune. Te rugăm să te re-autentifici.");
+        localStorage.clear();
+        window.location.href = 'auth.html';
+        return;
+    }
+
     console.log("Sesiune activă pentru:", user.username, "ID:", user.id);
 
     const API_BASE = "http://127.0.0.1:8080/api";
@@ -151,6 +163,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     modalWorkout.style.display = "none";
                     workoutForm.reset();
                     loadWorkoutHistory();
+                    // Auto-refresh fitness level după adăugare antrenament
+                    loadFitnessLevel();
                 }
             } catch (error) { alert("Eroare de conexiune la salvare."); }
             finally { btn.classList.remove('btn-loading'); }
@@ -313,6 +327,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (res.ok) {
                     alert("Metrici salvate cu succes! ❤️");
                     loadHealthMetrics();
+                    // Auto-refresh fitness level după adăugare metrici
+                    loadFitnessLevel();
                 }
             } catch (e) { console.error("Eroare salvare metrici:", e); }
             finally { btnSaveHealth.classList.remove('btn-loading'); }
@@ -405,6 +421,97 @@ document.addEventListener('DOMContentLoaded', () => {
         return formatted;
     }
 
+    // --- Fitness Level ---
+    async function loadFitnessLevel() {
+        const summary = document.getElementById('fitness-summary');
+        const loading = document.getElementById('fitness-loading');
+        
+        if (loading) loading.style.display = 'block';
+        if (summary) summary.style.display = 'none';
+
+        try {
+            console.log(`Fetching fitness level for user: ${user.id}`);
+            const res = await fetch(`${API_BASE}/fitness-level/summary/${user.id}`);
+
+            if (!res.ok) {
+                console.error(`Fitness API error: ${res.status} ${res.statusText}`);
+                showFitnessDemoData();
+                return;
+            }
+
+            const data = await res.json();
+            console.log("Fitness data received:", data);
+
+            // Check if data has required fields
+            if (!data || typeof data !== 'object') {
+                console.error("Invalid fitness data format");
+                showFitnessDemoData();
+                return;
+            }
+
+            // Helper pentru parsare sigură de numere
+            const parseN = (val, fallback = 0) => {
+                const n = parseFloat(val);
+                return isNaN(n) ? fallback : n;
+            };
+
+            // Populate datele
+            document.getElementById('fitness-vo2').innerText = parseN(data.vo2_max, 45).toFixed(1);
+            document.getElementById('fitness-battery').innerText = parseN(data.body_battery, 70);
+            document.getElementById('fitness-score').innerText = parseN(data.fitness_level_score, 5) + ' / 10';
+            document.getElementById('fitness-category').innerText = data.fitness_category || '--';
+
+            document.getElementById('fitness-5k').innerText = parseN(data.estimated_5k_time, 25).toFixed(1) + ' min';
+            document.getElementById('fitness-10k').innerText = parseN(data.estimated_10k_time, 50).toFixed(1) + ' min';
+            document.getElementById('fitness-marathon').innerText = parseN(data.estimated_marathon_time, 4).toFixed(2) + ' ore';
+
+            document.getElementById('fitness-pushup').innerText = parseN(data.pushup_estimate, 0) + ' reps';
+            document.getElementById('fitness-pullup').innerText = parseN(data.pullup_estimate, 0) + ' reps';
+            document.getElementById('fitness-bench').innerText = parseN(data.bench_press_estimate, 0).toFixed(1) + ' kg';
+            document.getElementById('fitness-deadlift').innerText = parseN(data.deadlift_estimate, 0).toFixed(1) + ' kg';
+
+            document.getElementById('fitness-insights').innerText = data.ai_insights || 'Nu avem date suficiente.';
+            document.getElementById('fitness-strengths').innerText = data.strength_weaknesses || 'Nu avem date suficiente.';
+
+            if (summary) summary.style.display = 'block';
+        } catch (e) {
+            console.error("Eroare la încărcare fitness level:", e);
+            showFitnessDemoData();
+        } finally {
+            if (loading) loading.style.display = 'none';
+        }
+    }
+
+    function showFitnessDemoData() {
+        // Demo data when API fails
+        document.getElementById('fitness-vo2').innerText = '45.5';
+        document.getElementById('fitness-battery').innerText = '72';
+        document.getElementById('fitness-score').innerText = '7 / 10';
+        document.getElementById('fitness-category').innerText = 'Intermediate';
+
+        document.getElementById('fitness-5k').innerText = '25.5 min';
+        document.getElementById('fitness-10k').innerText = '54.0 min';
+        document.getElementById('fitness-marathon').innerText = '3.50 ore';
+
+        document.getElementById('fitness-pushup').innerText = '35 reps';
+        document.getElementById('fitness-pullup').innerText = '12 reps';
+        document.getElementById('fitness-bench').innerText = '100.0 kg';
+        document.getElementById('fitness-deadlift').innerText = '150.0 kg';
+        document.getElementById('fitness-insights').innerText = 'Mod Demo: Ești într-o formă bună!';
+        document.getElementById('fitness-strengths').innerText = 'Mod Demo: Cardio bun, forță medie.';
+
+        const summary = document.getElementById('fitness-summary');
+        if (summary) summary.style.display = 'block';
+    }
+
+    // Auto-load fitness level la click pe tab
+    const fitnessLevelTab = document.querySelector('[data-target="fitness-level-section"]');
+    if (fitnessLevelTab) {
+        fitnessLevelTab.addEventListener('click', () => {
+            loadFitnessLevel();
+        });
+    }
+
     function typeWriter(element, text, speed = 10) {
         element.innerHTML = "";
         element.style.display = "block";
@@ -458,6 +565,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (res.ok) {
                     const data = await res.json();
                     typeWriter(feedbackBox, `**Calorii:** ${data.calories} kcal<br>**Feedback:** ${data.feedback}`);
+                    // Auto-refresh fitness level după analiză masă
+                    loadFitnessLevel();
                 }
             } catch (e) { console.error(e); }
             finally { btnAnalyzeMeal.classList.remove('btn-loading'); }
@@ -509,6 +618,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (recoveryChatHistory.length > 10) recoveryChatHistory.shift();
                     
                     chatContainer.scrollTop = chatContainer.scrollHeight;
+                    // Auto-refresh fitness level după chat recuperare
+                    loadFitnessLevel();
                 }
             } catch (e) { console.error(e); }
             finally { btnSendRecovery.classList.remove('btn-loading'); }
@@ -550,6 +661,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     typeWriter(innerDiv, content);
                     
                     resultBox.scrollIntoView({ behavior: 'smooth' });
+                    // Auto-refresh fitness level după generare masă
+                    loadFitnessLevel();
                 }
             } catch (e) { console.error(e); }
             finally { btnGenMeal.classList.remove('btn-loading'); }
@@ -587,6 +700,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     typeWriter(innerDiv, content);
                     
                     resultBox.scrollIntoView({ behavior: 'smooth' });
+                    // Auto-refresh fitness level după generare antrenament
+                    loadFitnessLevel();
                 }
             } catch (e) { console.error(e); }
             finally { btnGenWorkout.classList.remove('btn-loading'); }

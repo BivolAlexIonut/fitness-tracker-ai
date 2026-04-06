@@ -5,15 +5,17 @@
     <title>Personalizare AI - FitnessTracker AI</title>
     <link rel="stylesheet" href="style.css">
     <style>
-        body { display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #0a0a0a; margin: 0; }
-        .onboarding-card { max-width: 600px; width: 90%; background: #141414; padding: 40px; border-radius: 20px; border: 1px solid #222; }
+        body { display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #000; margin: 0; font-family: 'Inter', sans-serif; }
+        .onboarding-card { max-width: 600px; width: 90%; background: #0a0a0a; padding: 40px; border-radius: 12px; border: 1px solid #222; }
         .step-indicator { display: flex; gap: 10px; margin-bottom: 30px; }
-        .step { flex: 1; height: 4px; background: #333; border-radius: 2px; }
-        .step.active { background: var(--accent); box-shadow: 0 0 10px var(--accent); }
+        .step { flex: 1; height: 4px; background: #222; border-radius: 2px; }
+        .step.active { background: #fff; }
         .option-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 30px; }
-        .option-card { background: #1a1a1a; border: 2px solid #333; padding: 20px; border-radius: 12px; cursor: pointer; text-align: center; transition: 0.3s; }
-        .option-card.selected { border-color: var(--accent); background: rgba(16, 185, 129, 0.1); }
+        .option-card { background: #000; border: 1px solid #222; padding: 25px 20px; border-radius: 12px; cursor: pointer; text-align: center; transition: 0.3s; }
+        .option-card h3 { font-size: 15px; margin: 0; color: #fff; }
+        .option-card.selected { border-color: #fff; background: #111; }
         .hidden { display: none; }
+        h2 { color: #fff; margin-bottom: 20px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
     </style>
 </head>
 <body>
@@ -91,14 +93,18 @@
             document.getElementById('s' + s).classList.add('active');
         }
         document.getElementById('btn-finish').onclick = async () => {
-            const user = JSON.parse(localStorage.getItem('user'));
+            const userStr = localStorage.getItem('user');
+            if(!userStr) return;
+            const user = JSON.parse(userStr);
             data.sportsType = document.getElementById('sports-type').value;
-            data.bodyFatPercentage = parseFloat(document.getElementById('reg-fat').value);
-            data.muscleMass = parseFloat(document.getElementById('reg-muscle').value);
+            data.bodyFatPercentage = parseFloat(document.getElementById('reg-fat').value) || 0;
+            data.muscleMass = parseFloat(document.getElementById('reg-muscle').value) || 0;
             data.bloodType = document.getElementById('reg-blood').value;
             data.additionalNotes = document.getElementById('additional-notes').value;
 
-            const res = await fetch(`http://127.0.0.1:8080/api/user/preferences?userId=${user.userId}`, {
+            const userId = user.id || user.userId;
+
+            const res = await fetch(`http://127.0.0.1:8080/api/user/preferences?userId=${userId}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(data)

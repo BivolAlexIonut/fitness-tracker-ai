@@ -91,16 +91,32 @@ class RecoveryRequest(BaseModel):
 class PRRequest(BaseModel):
     workouts: List[WorkoutLog]
 
+class FitnessSummaryRequest(BaseModel):
+    profile: Optional[UserProfile] = None
+    recent_workouts: Optional[List[WorkoutLog]] = []
+    daily_metrics: Optional[List[DailyMetricsLog]] = []
+    fitness_level: Optional[dict] = None
+
 def get_demo_response(type_key, user="Utilizator"):
     if "nutri" in type_key:
         return {"calories": 450, "protein": 30, "carbs": 50, "fats": 12, "feedback": f"Mod Demo: Masa lui {user} pare echilibrata."}
     if "recovery" in type_key:
         return {"protocol": f"Mod Demo: Recomandam odihna si hidratare pentru {user}.", "estimated_recovery": "24 ore"}
     return {
-        "summary": f"Salut {user}! Analiza demo este gata.",
-        "recommendation": "Continua antrenamentele si asigura-te ca dormi suficient.",
-        "estimated_vo2_max": 44.0,
-        "body_battery": 80
+        "vo2_max": 45.5,
+        "fitness_level_score": 7,
+        "fitness_category": "Intermediate",
+        "estimated_5k_time": 25.5,
+        "estimated_10k_time": 54.0,
+        "estimated_marathon_time": 3.5,
+        "pushup_estimate": 35,
+        "pullup_estimate": 12,
+        "bench_press_estimate": 100.0,
+        "deadlift_estimate": 150.0,
+        "body_battery": 72,
+        "ai_insights": f"Salut {user}! Analiza demo este gata. Ești într-o formă bună. Continuă antrenamentele!",
+        "strength_weaknesses": "Puncte forte: cardio. Slăbiciuni: forță în partea superioară.",
+        "summary": "Analiza ta de fitness (Mod Demo) este completă."
     }
 
 async def call_gemini(prompt, type_key, user="Utilizator"):
@@ -273,6 +289,57 @@ async def get_meal_proposal(request: MealProposalRequest):
     }}
     """
     return await call_gemini(prompt, "nutri", user)
+
+@app.post("/predict/fitness-summary")
+async def get_fitness_summary(request: FitnessSummaryRequest):
+    user = request.profile.username if request.profile else "Utilizator"
+    context = f"Utilizator: {user}, Scop: {request.profile.fitnessGoal}, Vârstă: {request.profile.age}\n"
+    context += f"Antrenamente recente: {json.dumps([w.model_dump() for w in request.recent_workouts], indent=2)}\n"
+    context += f"Metricile de sănătate: {json.dumps([m.model_dump() for m in request.daily_metrics], indent=2)}\n"
+
+    current_level_str = "Nu există date anterioare."
+    if request.fitness_level:
+        current_level_str = json.dumps(request.fitness_level, indent=2)
+
+    prompt = f"""
+    Context Date Noi Utilizator: {context}
+    
+    NIVEL FITNESS CURENT (DIN BAZA DE DATE):
+    {current_level_str}
+
+    SARCINĂ:
+    Analizează noile antrenamente și metrici și actualizează Nivelul de Fitness.
+    REGULI CRITICE:
+    1. Folosește NIVELUL CURENT ca punct de plecare (baseline).
+    2. Modificările trebuie să fie REALISTE și INCREMENTALE (VO2 Max nu crește cu 5 puncte după un antrenament).
+    3. Dacă noile date arată progres, crește ușor valorile relevante. Dacă arată regres sau oboseală, scade-le.
+    4. Dacă nu există date noi semnificative, păstrează valorile actuale.
+    5. Calculează VO2 MAX, timpii pentru 5K/10K/Maraton și estimările de forță.
+
+    Răspunde DOAR cu JSON valid:
+    {{
+      "vo2_max": 45.5,
+      "fitness_level_score": 7,
+      "fitness_category": "Intermediate",
+      "estimated_5k_time": 25.5,
+      "estimated_10k_time": 54.0,
+      "estimated_marathon_time": 3.5,
+      "pushup_estimate": 35,
+      "pullup_estimate": 12,
+      "bench_press_estimate": 100.0,
+      "deadlift_estimate": 150.0,
+      "body_battery": 72,
+      "ai_insights": " text in romana despre evolutie...",
+      "strength_weaknesses": "text in romana..."
+    }}
+    """
+    result = await call_gemini(prompt, "fitness", user)
+
+    # Ensure body_battery is present in response
+    if "body_battery" not in result:
+        result["body_battery"] = 72
+
+    return result
 
 if __name__ == "__main__":
     import uvicorn

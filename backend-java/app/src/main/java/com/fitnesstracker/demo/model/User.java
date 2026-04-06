@@ -35,6 +35,10 @@ public class User {
     @com.fasterxml.jackson.annotation.JsonIgnore
     private List<RecoveryLog> recoveryLogs;
 
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    private List<FitnessLevel> fitnessLevels;
+
     // Getters and Setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -54,4 +58,6 @@ public class User {
     public void setMealLogs(List<MealLog> mealLogs) { this.mealLogs = mealLogs; }
     public List<RecoveryLog> getRecoveryLogs() { return recoveryLogs; }
     public void setRecoveryLogs(List<RecoveryLog> recoveryLogs) { this.recoveryLogs = recoveryLogs; }
+    public List<FitnessLevel> getFitnessLevels() { return fitnessLevels; }
+    public void setFitnessLevels(List<FitnessLevel> fitnessLevels) { this.fitnessLevels = fitnessLevels; }
 }
