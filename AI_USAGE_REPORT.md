@@ -24,6 +24,8 @@ Acest document descrie modul în care instrumentele de Inteligență Artificial�
 
 ## 4. Testare
 - Generarea testelor unitare pentru modelele Java (JUnit) și pentru endpoint-urile Python (Pytest), asigurând o validare automată a logicii de calcul a recordurilor personale (1RM).
+- **Mocking & Stabilitate:** Utilizarea AI pentru a implementa tehnici de `monkeypatch` în Python, izolând testele de apelurile externe către API-ul Gemini, ceea ce a dus la teste deterministe și rapide.
+- **Optimizarea Documentației:** Reorganizarea Backlog-ului și a rapoartelor de testare pentru a elimina redundanța și a reflecta cu precizie starea actuală a proiectului, conform recomandărilor de tip Code Review.
 
 ---
 **Concluzie:** Utilizarea AI a redus timpul de dezvoltare cu aproximativ 60%. Un succes major a fost capacitatea AI-ului de a coordona modificări sincronizate între multiple tehnologii (Java, Python și Web), asigurând că o schimbare de logică în Backend este reflectată imediat în algoritmul AI și în interfața grafică.

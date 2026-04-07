@@ -11,7 +11,7 @@ from typing import List, Optional
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 
-# Fix pentru caractere românești în consola Windows (dezactivat în timpul testelor)
+# Fix for Romanian characters in Windows console (disabled during tests)
 if sys.platform == "win32" and "pytest" not in sys.modules:
     import io
     sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
@@ -25,13 +25,13 @@ if GEMINI_API_KEY:
     try:
         client = genai.Client(api_key=GEMINI_API_KEY)
         print("--- DEBUG ATHLETICA AI ---")
-        print("Clientul Google GenAI a fost initializat.")
+        print("Google GenAI client initialized.")
     except Exception as e:
-        print(f"[ERR] Initializare Gemini: {str(e)}")
+        print(f"[ERR] Gemini initialization failed: {str(e)}")
 
 app = FastAPI()
 
-# Permitem comunicarea cu Frontend-ul
+# Enable CORS for frontend communication
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -40,13 +40,13 @@ app.add_middleware(
 )
 
 class UserProfile(BaseModel):
-    username: Optional[str] = "Utilizator"
-    fitnessGoal: Optional[str] = "Mentinere"
+    username: Optional[str] = "User"
+    fitnessGoal: Optional[str] = "Maintenance"
     age: Optional[int] = 25
-    gender: Optional[str] = "Nespecificat"
+    gender: Optional[str] = "Unspecified"
 
 class WorkoutLog(BaseModel):
-    type: Optional[str] = "Antrenament"
+    type: Optional[str] = "Workout"
     duration: Optional[int] = 0
     intensity: Optional[str] = "Medium"
     details: Optional[str] = ""
@@ -95,13 +95,15 @@ class FitnessSummaryRequest(BaseModel):
     profile: Optional[UserProfile] = None
     recent_workouts: Optional[List[WorkoutLog]] = []
     daily_metrics: Optional[List[DailyMetricsLog]] = []
+    personal_records: Optional[List[dict]] = []
     fitness_level: Optional[dict] = None
 
-def get_demo_response(type_key, user="Utilizator"):
+def get_demo_response(type_key, user="User"):
+    """Provides fallback static data when the AI service is unavailable."""
     if "nutri" in type_key:
-        return {"calories": 450, "protein": 30, "carbs": 50, "fats": 12, "feedback": f"Mod Demo: Masa lui {user} pare echilibrata."}
+        return {"calories": 450, "protein": 30, "carbs": 50, "fats": 12, "feedback": f"Demo Mode: {user}'s meal seems balanced."}
     if "recovery" in type_key:
-        return {"protocol": f"Mod Demo: Recomandam odihna si hidratare pentru {user}.", "estimated_recovery": "24 ore"}
+        return {"protocol": f"Demo Mode: Recommendation for {user}: rest and hydration.", "estimated_recovery": "24 hours"}
     return {
         "vo2_max": 45.5,
         "fitness_level_score": 7,
@@ -114,12 +116,13 @@ def get_demo_response(type_key, user="Utilizator"):
         "bench_press_estimate": 100.0,
         "deadlift_estimate": 150.0,
         "body_battery": 72,
-        "ai_insights": f"Salut {user}! Analiza demo este gata. Ești într-o formă bună. Continuă antrenamentele!",
-        "strength_weaknesses": "Puncte forte: cardio. Slăbiciuni: forță în partea superioară.",
-        "summary": "Analiza ta de fitness (Mod Demo) este completă."
+        "ai_insights": f"Hello {user}! Your demo analysis is ready. You are in good shape. Keep training!",
+        "strength_weaknesses": "Strengths: cardio. Weaknesses: upper body strength.",
+        "summary": "Your fitness analysis (Demo Mode) is complete."
     }
 
-async def call_gemini(prompt, type_key, user="Utilizator"):
+async def call_gemini(prompt, type_key, user="User"):
+    """Orchestrates calls to multiple Gemini models with fallback and retry logic."""
     if not client: 
         return get_demo_response(type_key, user)
     
@@ -132,12 +135,12 @@ async def call_gemini(prompt, type_key, user="Utilizator"):
     
     for model_name in models_to_try:
         try:
-            print(f"--- Incercam modelul: {model_name} ---")
+            print(f"--- Attempting model: {model_name} ---")
             response = client.models.generate_content(
                 model=model_name,
                 contents=prompt,
                 config={
-                    'system_instruction': f"Esti antrenorul personal al lui {user}. Vorbesti doar in ROMANA. Raspunzi DOAR cu JSON valid."
+                    'system_instruction': f"You are {user}'s personal trainer. Speak only in ROMANIAN. Respond ONLY with valid JSON."
                 }
             )
             
@@ -146,35 +149,36 @@ async def call_gemini(prompt, type_key, user="Utilizator"):
                 match = re.search(r'\{.*\}', text, re.DOTALL)
                 if match:
                     res = json.loads(match.group(0))
-                    print(f"[OK] Succes cu modelul: {model_name}")
+                    print(f"[OK] Success with model: {model_name}")
                     return res
                     
         except Exception as e:
             error_msg = str(e)
-            print(f"[ERR] {model_name} a esuat: {error_msg[:100]}...")
+            print(f"[ERR] {model_name} failed: {error_msg[:100]}...")
             if "429" in error_msg or "RESOURCE_EXHAUSTED" in error_msg:
                 time.sleep(1)
                 continue
             if "404" in error_msg:
                 continue
  
-    print("[FINAL] Toate modelele au esuat. Trimitem date Demo.")
+    print("[FINAL] All models failed. Sending Demo data.")
     return get_demo_response(type_key, user)
 
 @app.post("/predict/daily-advice")
 async def get_daily_advice(request: PredictionRequest):
-    user = request.profile.username if request.profile else "Utilizator"
-    context = f"Utilizator: {user}, Scop: {request.profile.fitnessGoal}, Vârstă: {request.profile.age}\n"
-    context += f"Antrenamente recente: {json.dumps([w.model_dump() for w in request.recent_workouts], indent=2)}\n"
-    context += f"Metricile de azi: {json.dumps([m.model_dump() for m in request.daily_metrics], indent=2)}\n"
+    """Generates personalized daily training and recovery advice."""
+    user = request.profile.username if request.profile else "User"
+    context = f"User: {user}, Goal: {request.profile.fitnessGoal}, Age: {request.profile.age}\n"
+    context += f"Recent workouts: {json.dumps([w.model_dump() for w in request.recent_workouts], indent=2)}\n"
+    context += f"Daily metrics: {json.dumps([m.model_dump() for m in request.daily_metrics], indent=2)}\n"
     
     prompt = f"""
-    Context Date Utilizator: {context}
-    Analizează datele și oferă un raport detaliat în ROMÂNĂ.
-    Răspunde DOAR cu JSON:
+    Context Data: {context}
+    Analyze the data and provide a detailed report in ROMANIAN.
+    Respond ONLY with JSON:
     {{
-      "summary": "text lung aici",
-      "recommendation": "sfat scurt",
+      "summary": "long text here",
+      "recommendation": "short advice",
       "estimated_vo2_max": 45.0,
       "body_battery": 85
     }}
@@ -183,30 +187,33 @@ async def get_daily_advice(request: PredictionRequest):
 
 @app.post("/predict/meal-analysis")
 async def analyze_meal(request: MealAnalysisRequest):
-    user = request.profile.username if request.profile else "Utilizator"
-    prompt = f"Analizează masa: {request.meal_description}. Răspunde DOAR cu JSON: {{'calories': număr, 'protein': număr, 'carbs': număr, 'fats': număr, 'feedback': 'text'}}"
+    """Analyzes meal descriptions for nutritional content."""
+    user = request.profile.username if request.profile else "User"
+    prompt = f"Analyze meal: {request.meal_description}. Respond ONLY with JSON: {{'calories': number, 'protein': number, 'carbs': number, 'fats': number, 'feedback': 'text'}}"
     return await call_gemini(prompt, "nutri", user)
+
 @app.post("/predict/recovery-chat")
 async def recovery_chat(request: RecoveryRequest):
-    user = request.profile.username if request.profile else "Utilizator"
-    context = f"Utilizator: {user}, Scop: {request.profile.fitnessGoal}\n"
-    context += f"Antrenamente recente: {json.dumps([w.model_dump() for w in request.recent_workouts], indent=2)}\n"
-    context += f"Metricile de azi: {json.dumps([m.model_dump() for m in request.daily_metrics], indent=2)}\n"
+    """Handles conversational recovery guidance based on recent physical strain."""
+    user = request.profile.username if request.profile else "User"
+    context = f"User: {user}, Goal: {request.profile.fitnessGoal}\n"
+    context += f"Recent workouts: {json.dumps([w.model_dump() for w in request.recent_workouts], indent=2)}\n"
+    context += f"Daily metrics: {json.dumps([m.model_dump() for m in request.daily_metrics], indent=2)}\n"
 
     history_str = "\n".join([f"{m['role']}: {m['content']}" for m in request.chat_history])
 
     prompt = f"""
-    Context Fizic: {context}
-    Istoric Chat: {history_str}
-    Ultimul Mesaj Utilizator: {request.user_message}
+    Physical Context: {context}
+    Chat History: {history_str}
+    Last Message: {request.user_message}
 
-    Esti un asistent expert in recuperare sportiva. 
-    Daca utilizatorul spune ca il doare ceva, intreaba-l detalii (intensitate, cand a aparut, tipul durerii) inainte de a da un protocol final.
-    Daca ai destule detalii, ofera un protocol clar de recuperare (stretching, gheata, repaus etc.).
+    You are an expert recovery assistant. 
+    If the user mentions pain, ask for details (intensity, onset, type) before providing a protocol.
+    Provide a clear protocol (stretching, icing, rest) when sufficient data is available.
 
-    Răspunde DOAR cu JSON:
+    Respond ONLY with JSON:
     {{
-      "message": "raspunsul tau catre utilizator aici",
+      "message": "your response here",
       "is_final_protocol": true/false
     }}
     """
@@ -214,12 +221,13 @@ async def recovery_chat(request: RecoveryRequest):
 
 @app.post("/analyze-pr-trend")
 async def analyze_pr_trend(data: list = Body(...)):
-    if not data: return {"error": "Lipsesc datele"}
+    """Analyzes strength progress and predicts 1RM trends using polynomial regression."""
+    if not data: return {"error": "Missing data"}
     
     weights = [float(d.get('weight', 0)) for d in data]
     reps = [int(d.get('reps', 1)) for d in data]
     
-    # Calcul 1RM (Epley formula) pentru ultimul record
+    # 1RM Calculation using Epley formula
     last_weight = weights[-1]
     last_reps = reps[-1]
     one_rm = round(last_weight * (1 + 0.0333 * last_reps), 2) if last_reps > 1 else last_weight
@@ -228,11 +236,11 @@ async def analyze_pr_trend(data: list = Body(...)):
         return {
             "trend": [last_weight],
             "one_rm": one_rm,
-            "next_prediction": last_weight # Fără istoric, predicția e greutatea actuală
+            "next_prediction": last_weight
         }
         
     x = np.arange(len(weights))
-    # Folosim grad 2 doar dacă avem cel puțin 3 puncte, altfel grad 1 (linie dreaptă)
+    # Use degree 2 polynomial fit for 3+ points, otherwise linear
     degree = 2 if len(weights) >= 3 else 1
     model = np.poly1d(np.polyfit(x, weights, degree))
     
@@ -244,79 +252,79 @@ async def analyze_pr_trend(data: list = Body(...)):
 
 @app.post("/predict/workout-proposal")
 async def get_workout_proposal(request: WorkoutProposalRequest):
-    user = request.profile.username if request.profile else "Utilizator"
-    context = f"Utilizator: {user}, Scop: {request.profile.fitnessGoal}, Vârstă: {request.profile.age}\n"
-    context += f"Antrenamente recente (ultimele 10): {json.dumps([w.model_dump() for w in request.recent_workouts], indent=2)}\n"
-    context += f"Metricile de sănătate recente: {json.dumps([m.model_dump() for m in request.daily_metrics], indent=2)}\n"
+    """Generates a customized workout plan based on user request and health status."""
+    user = request.profile.username if request.profile else "User"
+    context = f"User: {user}, Goal: {request.profile.fitnessGoal}, Age: {request.profile.age}\n"
+    context += f"Recent workouts: {json.dumps([w.model_dump() for w in request.recent_workouts], indent=2)}\n"
+    context += f"Recent health metrics: {json.dumps([m.model_dump() for m in request.daily_metrics], indent=2)}\n"
     
     prompt = f"""
-    Context Date Utilizator: {context}
-    Cerere Utilizator: {request.user_input}
+    Context Data: {context}
+    User Request: {request.user_input}
     
-    Propune un antrenament personalizat în ROMÂNĂ bazat pe cererea utilizatorului și starea lui actuală (metrici, antrenamente anterioare).
-    Dacă utilizatorul este obosit (HRV mic, somn puțin, stres mare), propune ceva mai ușor chiar dacă el cere ceva intens.
+    Propose a personalized workout in ROMANIAN. 
+    Adjust intensity based on health metrics (low HRV/sleep should lead to lighter proposals).
     
-    Răspunde DOAR cu JSON:
+    Respond ONLY with JSON:
     {{
-      "workout_name": "Numele antrenamentului",
-      "exercises": "Lista de exerciții, seturi, repetări sub formă de text",
-      "ai_notes": "De ce am propus asta bazat pe datele tale"
+      "workout_name": "Workout Name",
+      "exercises": "List of exercises, sets, reps as text",
+      "ai_notes": "Rationale based on health data"
     }}
     """
     return await call_gemini(prompt, "workout", user)
 
 @app.post("/predict/meal-proposal")
 async def get_meal_proposal(request: MealProposalRequest):
-    user = request.profile.username if request.profile else "Utilizator"
-    context = f"Utilizator: {user}, Scop: {request.profile.fitnessGoal}, Vârstă: {request.profile.age}\n"
-    context += f"Antrenamente recente: {json.dumps([w.model_dump() for w in request.recent_workouts], indent=2)}\n"
-    context += f"Metricile de sănătate recente: {json.dumps([m.model_dump() for m in request.daily_metrics], indent=2)}\n"
+    """Generates meal recommendations based on available ingredients and recent activity."""
+    user = request.profile.username if request.profile else "User"
+    context = f"User: {user}, Goal: {request.profile.fitnessGoal}, Age: {request.profile.age}\n"
+    context += f"Recent workouts: {json.dumps([w.model_dump() for w in request.recent_workouts], indent=2)}\n"
+    context += f"Recent health metrics: {json.dumps([m.model_dump() for m in request.daily_metrics], indent=2)}\n"
     
     prompt = f"""
-    Context Date Utilizator: {context}
-    Ingrediente Disponibile: {request.ingredients}
+    Context Data: {context}
+    Available Ingredients: {request.ingredients}
     
-    Propune o masă/dietă pentru astăzi în ROMÂNĂ bazată pe ingredientele pe care utilizatorul le are în casă și pe activitatea lui recentă.
-    Dacă a avut un antrenament intens, propune ceva bogat în proteine și carbohidrați.
-    Dacă metricile arată stres mare sau somn puțin, propune ceva nutritiv și ușor de digerat.
+    Propose a meal/diet for today in ROMANIAN.
+    Ensure protein/carbs match recent training intensity.
     
-    Răspunde DOAR cu JSON:
+    Respond ONLY with JSON:
     {{
-      "meal_name": "Numele mesei",
-      "recipe": "Instrucțiuni scurte de preparare",
-      "nutritional_info": "Calorii și macronutrienți estimați",
-      "ai_reasoning": "De ce este această masă potrivită pentru tine astăzi"
+      "meal_name": "Meal Name",
+      "recipe": "Short instructions",
+      "nutritional_info": "Estimated calories and macros",
+      "ai_reasoning": "Rationale for this choice"
     }}
     """
     return await call_gemini(prompt, "nutri", user)
 
 @app.post("/predict/fitness-summary")
 async def get_fitness_summary(request: FitnessSummaryRequest):
-    user = request.profile.username if request.profile else "Utilizator"
-    context = f"Utilizator: {user}, Scop: {request.profile.fitnessGoal}, Vârstă: {request.profile.age}\n"
-    context += f"Antrenamente recente: {json.dumps([w.model_dump() for w in request.recent_workouts], indent=2)}\n"
-    context += f"Metricile de sănătate: {json.dumps([m.model_dump() for m in request.daily_metrics], indent=2)}\n"
+    """Calculates comprehensive fitness levels, including VO2Max and strength estimates."""
+    user = request.profile.username if request.profile else "User"
+    context = f"User: {user}, Goal: {request.profile.fitnessGoal}, Age: {request.profile.age}\n"
+    context += f"Recent workouts: {json.dumps([w.model_dump() for w in request.recent_workouts], indent=2)}\n"
+    context += f"Health metrics: {json.dumps([m.model_dump() for m in request.daily_metrics], indent=2)}\n"
+    
+    if request.personal_records:
+        context += f"Personal Records (PRs): {json.dumps(request.personal_records, indent=2)}\n"
 
-    current_level_str = "Nu există date anterioare."
+    current_level_str = "No prior data."
     if request.fitness_level:
         current_level_str = json.dumps(request.fitness_level, indent=2)
 
     prompt = f"""
-    Context Date Noi Utilizator: {context}
-    
-    NIVEL FITNESS CURENT (DIN BAZA DE DATE):
-    {current_level_str}
+    New Context: {context}
+    CURRENT FITNESS LEVEL (BASELINE): {current_level_str}
 
-    SARCINĂ:
-    Analizează noile antrenamente și metrici și actualizează Nivelul de Fitness.
-    REGULI CRITICE:
-    1. Folosește NIVELUL CURENT ca punct de plecare (baseline).
-    2. Modificările trebuie să fie REALISTE și INCREMENTALE (VO2 Max nu crește cu 5 puncte după un antrenament).
-    3. Dacă noile date arată progres, crește ușor valorile relevante. Dacă arată regres sau oboseală, scade-le.
-    4. Dacă nu există date noi semnificative, păstrează valorile actuale.
-    5. Calculează VO2 MAX, timpii pentru 5K/10K/Maraton și estimările de forță.
+    TASK: Update fitness level based on new data.
+    CRITICAL RULES:
+    1. Use baseline for realistic, incremental updates.
+    2. Force update strength estimates if new PRs are present.
+    3. Calculate VO2 MAX, race time predictions (5K/10K/Marathon), and strength metrics.
 
-    Răspunde DOAR cu JSON valid:
+    Respond ONLY with valid JSON:
     {{
       "vo2_max": 45.5,
       "fitness_level_score": 7,
@@ -329,13 +337,12 @@ async def get_fitness_summary(request: FitnessSummaryRequest):
       "bench_press_estimate": 100.0,
       "deadlift_estimate": 150.0,
       "body_battery": 72,
-      "ai_insights": " text in romana despre evolutie...",
-      "strength_weaknesses": "text in romana..."
+      "ai_insights": "insights in romanian...",
+      "strength_weaknesses": "text in romanian..."
     }}
     """
     result = await call_gemini(prompt, "fitness", user)
 
-    # Ensure body_battery is present in response
     if "body_battery" not in result:
         result["body_battery"] = 72
 

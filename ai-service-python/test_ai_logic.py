@@ -1,15 +1,23 @@
-import pytest
-from main import app, FitnessSummaryRequest, UserProfile
+import main
 from fastapi.testclient import TestClient
 
-client = TestClient(app)
+client = TestClient(main.app)
 
-def test_vo2max_stability_logic():
+def test_vo2max_stability_logic(monkeypatch):
     """
-    Test profesional: Verifică dacă logica de actualizare a VO2Max 
-    este incrementală și nu are fluctuații nerealiste.
+    Verifies that VO2Max updates are incremental and stable.
+    Ensures no unrealistic fluctuations occur when provided with a baseline.
     """
-    # Simulăm un utilizator care are deja VO2Max 45.0 în baza de date
+    async def fake_call_gemini(*args, **kwargs):
+        return {
+            "vo2_max": 45.5,
+            "fitness_category": "Intermediate",
+            "ai_insights": "Stable evolution detected."
+        }
+
+    monkeypatch.setattr(main, "call_gemini", fake_call_gemini)
+
+    # Payload simulating a user with an existing VO2Max baseline of 45.0
     payload = {
         "profile": {"username": "Alex", "fitnessGoal": "Muscle Gain", "age": 25},
         "recent_workouts": [
@@ -29,9 +37,7 @@ def test_vo2max_stability_logic():
     assert response.status_code == 200
     data = response.json()
     
-    # Verificăm stabilitatea (Modul Demo returnează 45.5, deci e un pas de +0.5)
-    # Într-un test real cu API-ul activ, am verifica dacă variația este < 2.0 unități
+    # Assert stability: variance should be within safe bounds
     new_vo2 = data["vo2_max"]
-    assert new_vo2 >= 44.0 and new_vo2 <= 47.0, f"Fluctuație nerealistă detectată: {new_vo2}"
+    assert 44.0 <= new_vo2 <= 47.0, f"Unrealistic fluctuation detected: {new_vo2}"
     assert "fitness_category" in data
-    print(f"\n[TEST PASSED] VO2Max nou: {new_vo2} (Variație sigură)")

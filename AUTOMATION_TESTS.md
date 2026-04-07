@@ -70,11 +70,12 @@ Am implementat teste de integritate în `test_ai_logic.py` pentru a preveni "hal
 Am utilizat `WorkoutControllerTest.java` pentru a identifica lipsa validărilor pe server pentru datele introduse de utilizatori.
 
 *   **Identificarea Problemei:** Testul `testAddWorkoutNegativeDuration` a demonstrat că sistemul permitea salvarea antrenamentelor cu durată negativă (ex: -30 minute).
-*   **Soluția (Fix):** În urma acestui test, am implementat în `WorkoutController.java` un filtru de validare:
+*   **Soluția (Fix):** În urma acestui test, am implementat în `WorkoutController.java` un filtru de validare care returnează un mesaj de eroare standardizat în engleză:
     ```java
-    if (workout.getDuration() < 0) return ResponseEntity.badRequest().body("...");
+    if (workout.getDuration() < 0) return ResponseEntity.badRequest().body("Workout duration cannot be negative.");
     ```
-*   **Valoare:** Am transformat un API permisiv într-unul robust, prevenind coruperea bazei de date cu statistici imposibile.
+*   **Acoperire Completă:** Am restaurat și testul `testAddWorkoutUserNotFound` pentru a ne asigura că sistemul returnează corect `404 Not Found` atunci când ID-ul utilizatorului este invalid, menținând astfel o acoperire duală (400 pentru date invalide și 404 pentru resurse lipsă).
+*   **Valoare:** Am transformat un API permisiv într-unul robust, prevenind coruperea bazei de date cu statistici imposibile și asigurând un contract clar de erori pentru Frontend.
 
 ---
 

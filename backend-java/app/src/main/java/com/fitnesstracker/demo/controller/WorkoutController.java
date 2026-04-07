@@ -16,6 +16,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+/**
+ * REST controller for workout logging and analytics.
+ */
 @RestController
 @RequestMapping("/api/workouts")
 @CrossOrigin(origins = "*")
@@ -33,10 +36,13 @@ public class WorkoutController {
     @org.springframework.beans.factory.annotation.Value("${ai.service.url}")
     private String aiServiceBaseUrl;
 
+    /**
+     * Persists a new workout and triggers a background fitness profile update.
+     */
     @PostMapping("/add")
     public ResponseEntity<?> addWorkout(@RequestParam Long userId, @RequestBody Workout workout) {
         if (workout.getDuration() < 0) {
-            return ResponseEntity.badRequest().body("Durata antrenamentului nu poate fi negativă.");
+            return ResponseEntity.badRequest().body("Workout duration cannot be negative.");
         }
 
         Optional<User> userOpt = userRepository.findById(userId);
@@ -45,7 +51,7 @@ public class WorkoutController {
             if (workout.getDate() == null) workout.setDate(LocalDateTime.now());
             workoutRepository.save(workout);
 
-            // Trigger fitness level update asincron
+            // Update fitness baseline asynchronously based on new training data
             triggerFitnessSummaryUpdate(userOpt.get());
 
             return ResponseEntity.ok("Workout logged successfully");
@@ -53,12 +59,18 @@ public class WorkoutController {
         return ResponseEntity.notFound().build();
     }
 
+    /**
+     * Retrieves workout history for a specific user, ordered by date descending.
+     */
     @GetMapping("/history")
     public ResponseEntity<List<Workout>> getWorkoutHistory(@RequestParam Long userId) {
         List<Workout> workouts = workoutRepository.findByUserIdOrderByDateDesc(userId);
         return ResponseEntity.ok(workouts);
     }
 
+    /**
+     * Interfaces with the AI service to extract and predict personal records from training logs.
+     */
     @GetMapping("/prs")
     public ResponseEntity<?> getPersonalRecords(@RequestParam Long userId) {
         List<Workout> workouts = workoutRepository.findByUserIdOrderByDateDesc(userId);
@@ -71,19 +83,16 @@ public class WorkoutController {
             RestTemplate restTemplate = new RestTemplate();
             return ResponseEntity.ok(restTemplate.postForObject(url, aiRequest, Map.class));
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Eroare la extragerea PR-urilor.");
+            return ResponseEntity.badRequest().body("Failed to extract PRs from workout history.");
         }
     }
 
     private void triggerFitnessSummaryUpdate(User user) {
         try {
-            // Apelăm AI pentru a obține rezumatul de fitness
             Map<String, Object> aiResponse = aiService.getFitnessSummary(user);
-
-            // Actualizăm baza de date cu noile date (dacă AI spune că trebuie update)
             aiService.updateFitnessLevel(user, aiResponse);
         } catch (Exception e) {
-            System.out.println("[WorkoutController] Eroare la update fitness level: " + e.getMessage());
+            System.err.println("[WorkoutController] Background fitness update failed: " + e.getMessage());
         }
     }
 }

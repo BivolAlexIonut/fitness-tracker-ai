@@ -32,6 +32,13 @@ Acest document conține lista de funcționalități planificate și starea imple
   - [x] Sfatul zilei bazat pe contextul utilizatorului
   - [x] Analiză personală a recordurilor (1RM Prediction)
 
+### 🧪 Testare & Calitate (Cerință Proiect)
+- **Sarcini:**
+  - [x] Implementare Teste Unitare în Java (JUnit) - *Validare Controller & Business Logic*
+  - [x] Implementare Teste Unitare în Python (Pytest) - *Validare Algoritmi AI & Edge Cases*
+  - [x] Teste de Integritate AI (Stabilitate VO2Max)
+  - [x] Documentație completă de Debugging & Testare (AUTOMATION_TESTS.md)
+
 ### 💬 Asistenți Specializați
 - **User Story:** Ca utilizator, vreau să pot vorbi cu asistenți specializați pe nutriție și recuperare.
 - **Sarcini:**
@@ -52,19 +59,6 @@ Acest document conține lista de funcționalități planificate și starea imple
 ---
 
 ## 🔴 De Implementat (Future / To Do)
-
-### 🧪 Testare & Calitate (Cerință Proiect)
-- **Sarcini:**
-  - [x] Implementare Teste Unitare în Java (JUnit) - *Validare Controller & Business Logic*
-  - [x] Implementare Teste Unitare în Python (Pytest) - *Validare Algoritmi AI & Edge Cases*
-  - [x] Teste de Integritate AI (Stabilitate VO2Max)
-  - [x] Documentație completă de Debugging & Testare (AUTOMATION_TESTS.md)
-
-### 📈 Vizualizare Avansată
-- **User Story:** Ca utilizator, vreau să văd grafice evolutive pentru a înțelege trendurile pe termen lung.
-- **Sarcini:**
-  - [ ] Grafic evoluție PR-uri (Trendline AI)
-  - [ ] Grafic comparativ HRV vs Stress pe 30 de zile
 
 ### 🔔 Notificări & Gamification
 - **Sarcini:**
