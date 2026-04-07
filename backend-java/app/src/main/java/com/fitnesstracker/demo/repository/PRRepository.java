@@ -8,4 +8,5 @@ import java.util.List;
 @Repository
 public interface PRRepository extends JpaRepository<PersonalRecord, Long> {
     List<PersonalRecord> findByUserIdAndExerciseNameOrderByDateAsc(String userId, String exerciseName);
+    List<PersonalRecord> findByUserId(String userId);
 }

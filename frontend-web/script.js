@@ -1,33 +1,35 @@
+/**
+ * Athletica AI - Global Application State and Event Handlers
+ * Orchestrates API communication, session management, and dynamic UI updates.
+ */
+
 document.addEventListener('DOMContentLoaded', () => {
     console.log("--- ATHLETICA AI STARTUP ---");
-    console.log("API_BASE:", "http://127.0.0.1:8080/api");
 
-    // --- 1. CONFIGURARE INIȚIALĂ ȘI SESIUNE ---
+    // --- 1. SESSION CONFIGURATION ---
     const userStr = localStorage.getItem('user');
     if (!userStr) {
-        console.warn("Utilizator nelogat, redirecționare...");
+        console.warn("Unauthorized access, redirecting to login...");
         window.location.href = 'auth.html';
         return;
     }
 
     const userRaw = JSON.parse(userStr);
-    console.log("User Raw from Storage:", userRaw);
-
     const user = {
         ...userRaw,
         id: userRaw.id || userRaw.userId,
         userId: userRaw.userId || userRaw.id
     };
-    
+
     if (!user.id) {
-        console.error("CRITIC: ID-ul utilizatorului lipsește din sesiune!", user);
-        alert("Eroare sesiune. Te rugăm să te re-autentifici.");
+        console.error("Critical: User ID missing from session storage.", user);
+        alert("Session error. Please re-authenticate.");
         localStorage.clear();
         window.location.href = 'auth.html';
         return;
     }
 
-    console.log("Sesiune activă pentru:", user.username, "ID:", user.id);
+    console.log(`Active session for: ${user.username} (ID: ${user.id})`);
 
     const API_BASE = "http://127.0.0.1:8080/api";
     const AI_PR_API = "http://127.0.0.1:8006/analyze-pr-trend";
@@ -35,11 +37,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const displayUsername = document.getElementById('display-username');
     if (displayUsername) displayUsername.innerText = user.username;
 
-    // --- 2. NAVIGARE ȘI UI ---
+    // --- 2. NAVIGATION & UI ORCHESTRATION ---
     const tabBtns = document.querySelectorAll('.tab-btn');
     const tabContents = document.querySelectorAll('.tab-content');
 
-    // Funcție pentru încărcarea exercițiilor din baza de date
+    /**
+     * Populates exercise selection dropdowns from the backend registry.
+     */
     async function loadExerciseOptions() {
         const prSelect = document.getElementById('pr-exercise');
         if (!prSelect) return;
@@ -49,29 +53,28 @@ document.addEventListener('DOMContentLoaded', () => {
             if (res.ok) {
                 const exercises = await res.json();
                 if (exercises.length > 0) {
-                    prSelect.innerHTML = ''; // Curățăm opțiunile statice
+                    prSelect.innerHTML = '';
                     exercises.forEach(ex => {
                         const opt = document.createElement('option');
                         opt.value = ex.name;
                         opt.innerText = ex.displayName;
                         prSelect.appendChild(opt);
                     });
-                    // Reîncărcăm analiza pentru primul exercițiu din listă
                     loadPRAnalytics(prSelect.value);
                 }
             }
         } catch (e) {
-            console.error("Eroare încărcare exerciții:", e);
+            console.error("Exercise options load failed:", e);
         }
     }
 
     loadExerciseOptions();
 
+    // Tab switching logic
     tabBtns.forEach(btn => {
         btn.addEventListener('click', () => {
             const targetId = btn.getAttribute('data-target');
-            console.log("Schimbare tab către:", targetId);
-
+            
             tabContents.forEach(content => content.style.display = 'none');
             tabBtns.forEach(b => b.classList.remove('active'));
 
@@ -81,7 +84,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 btn.classList.add('active');
             }
 
-            // Încărcare automată analiză dacă intrăm pe secțiunile relevante
+            // Lazy-load section data
             if (targetId === 'pr-section') {
                 const prSelect = document.getElementById('pr-exercise');
                 if (prSelect) loadPRAnalytics(prSelect.value);
@@ -91,7 +94,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // Logout [cite: 35]
+    // Session termination
     const btnLogout = document.getElementById('btn-logout');
     if (btnLogout) {
         btnLogout.onclick = () => {
@@ -100,7 +103,7 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     }
 
-    // Modal Antrenament
+    // Workout Logging Modal
     const modalWorkout = document.getElementById('workout-modal');
     const btnShowWorkout = document.getElementById('btn-show-workout');
     if (btnShowWorkout) {
@@ -109,7 +112,10 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     }
 
-    // --- 3. ISTORIC ANTRENAMENTE ---
+    // --- 3. WORKOUT HISTORY ---
+    /**
+     * Fetches and renders historical workout logs.
+     */
     async function loadWorkoutHistory() {
         const historyBody = document.getElementById('workout-history-body');
         if (!historyBody) return;
@@ -119,12 +125,12 @@ document.addEventListener('DOMContentLoaded', () => {
             if (res.ok) {
                 const workouts = await res.json();
                 if (workouts.length === 0) {
-                    historyBody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Niciun antrenament găsit.</td></tr>';
+                    historyBody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No workout logs found.</td></tr>';
                     return;
                 }
                 historyBody.innerHTML = workouts.map(w => `
                     <tr>
-                        <td><strong>${new Date(w.date).toLocaleDateString('ro-RO')}</strong></td>
+                        <td><strong>${new Date(w.date).toLocaleDateString()}</strong></td>
                         <td><span class="badge">${w.type}</span></td>
                         <td>${w.details || '-'}</td>
                         <td>${w.duration} min</td>
@@ -132,11 +138,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     </tr>
                 `).join('');
             }
-        } catch (e) { console.error("Eroare istoric:", e); }
+        } catch (e) { console.error("History fetch failed:", e); }
     }
     loadWorkoutHistory();
 
-    // --- 4. SALVARE ANTRENAMENT [cite: 37, 38] ---
+    // --- 4. WORKOUT PERSISTENCE ---
     const workoutForm = document.getElementById('workout-form');
     if (workoutForm) {
         workoutForm.onsubmit = async (e) => {
@@ -163,15 +169,15 @@ document.addEventListener('DOMContentLoaded', () => {
                     modalWorkout.style.display = "none";
                     workoutForm.reset();
                     loadWorkoutHistory();
-                    // Auto-refresh fitness level după adăugare antrenament
+                    // Sync fitness profile after new training data
                     loadFitnessLevel();
                 }
-            } catch (error) { alert("Eroare de conexiune la salvare."); }
+            } catch (error) { alert("Network error during workout save."); }
             finally { btn.classList.remove('btn-loading'); }
         };
     }
 
-    // --- 5. PERSONAL RECORDS (high-contrast PRs) ---
+    // --- 5. PERSONAL RECORDS (PR) ANALYTICS ---
     const btnSavePR = document.getElementById('btn-save-pr');
     let prChartInstance = null;
 
@@ -182,7 +188,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const reps = document.getElementById('pr-reps').value;
 
             if (!weight || !reps) {
-                alert("Introdu greutatea și repetările!");
+                alert("Please enter weight and repetitions!");
                 return;
             }
 
@@ -202,34 +208,36 @@ document.addEventListener('DOMContentLoaded', () => {
                     body: JSON.stringify(prData)
                 });
                 if (res.ok) {
-                    alert("PR salvat cu succes! 🎉");
+                    alert("Personal Record recorded! 🎉");
                     document.getElementById('pr-weight').value = '';
                     document.getElementById('pr-reps').value = '';
                     loadPRAnalytics(exercise);
                 }
-            } catch (e) { console.error("Eroare salvare PR:", e); }
+            } catch (e) { console.error("PR persistence failed:", e); }
             finally { btnSavePR.classList.remove('btn-loading'); }
         };
     }
 
+    /**
+     * Orchestrates PR history retrieval and AI-driven trend analysis.
+     */
     async function loadPRAnalytics(exercise) {
         try {
-            // Preluare istoric din MySQL via Java (8080)
+            // Fetch PR logs from Java Backend
             const historyRes = await fetch(`${API_BASE}/pr/${user.id}/${exercise}`);
             const history = await historyRes.json();
 
-            // Populare istoric tabel PR
             const prHistoryBody = document.getElementById('pr-history-body');
             const prHistoryTitle = document.getElementById('pr-history-title');
             if (prHistoryTitle) prHistoryTitle.innerText = exercise;
-            
+
             if (prHistoryBody) {
                 if (history.length === 0) {
-                    prHistoryBody.innerHTML = '<tr><td colspan="3" style="text-align:center;">Niciun record găsit.</td></tr>';
+                    prHistoryBody.innerHTML = '<tr><td colspan="3" style="text-align:center;">No records found.</td></tr>';
                 } else {
                     prHistoryBody.innerHTML = history.map(h => `
                         <tr>
-                            <td>${new Date(h.date).toLocaleDateString('ro-RO')}</td>
+                            <td>${new Date(h.date).toLocaleDateString()}</td>
                             <td><strong>${h.weight} kg</strong></td>
                             <td>${h.reps}</td>
                         </tr>
@@ -244,7 +252,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            // Analiză AI via Python (8006)
+            // Fetch regression-based trend from Python AI Service
             const aiRes = await fetch(AI_PR_API, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -253,11 +261,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (aiRes.ok) {
                 const aiData = await aiRes.json();
-                document.getElementById('display-1rm').innerText = aiData.one_rm + " kg";
-                document.getElementById('display-next').innerText = aiData.next_prediction + " kg";
+                document.getElementById('display-1rm').innerText = `${aiData.one_rm} kg`;
+                document.getElementById('display-next').innerText = `${aiData.next_prediction} kg`;
                 renderPRChart(history, aiData.trend);
             }
-        } catch (e) { console.error("Eroare comunicare AI PR (8006):", e); }
+        } catch (e) { console.error("AI PR analysis failed:", e); }
     }
 
     function renderPRChart(history, trendData) {
@@ -275,8 +283,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     { label: 'AI Trend', data: trendData, borderColor: '#888888', borderDash: [5, 5], fill: false }
                 ]
             },
-            options: { 
-                responsive: true, 
+            options: {
+                responsive: true,
                 plugins: { legend: { labels: { color: '#fff' } } },
                 scales: {
                     x: { ticks: { color: '#888' }, grid: { color: '#222' } },
@@ -286,13 +294,12 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Actualizare grafic la schimbarea exercițiului
     const prSelect = document.getElementById('pr-exercise');
     if (prSelect) {
         prSelect.onchange = () => loadPRAnalytics(prSelect.value);
     }
 
-    // --- 6. DAILY METRICS (HEALTH) ---
+    // --- 6. HEALTH METRICS (HRV, SLEEP, STRESS) ---
     const btnSaveHealth = document.getElementById('btn-save-health');
     let healthChartInstance = null;
 
@@ -304,7 +311,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const rhr = document.getElementById('h-rhr').value;
 
             if (!hrv || !sleep || !stress || !rhr) {
-                alert("Te rugăm să completezi toate câmpurile!");
+                alert("Please fill in all health metrics!");
                 return;
             }
 
@@ -315,7 +322,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 sleepHours: parseFloat(sleep),
                 stressLevel: parseInt(stress),
                 restingHeartRate: parseInt(rhr),
-                date: new Date().toISOString().split('T')[0] // Doar data YYYY-MM-DD
+                date: new Date().toISOString().split('T')[0]
             };
 
             try {
@@ -325,16 +332,18 @@ document.addEventListener('DOMContentLoaded', () => {
                     body: JSON.stringify(metricsData)
                 });
                 if (res.ok) {
-                    alert("Metrici salvate cu succes! ❤️");
+                    alert("Health metrics updated! ❤️");
                     loadHealthMetrics();
-                    // Auto-refresh fitness level după adăugare metrici
                     loadFitnessLevel();
                 }
-            } catch (e) { console.error("Eroare salvare metrici:", e); }
+            } catch (e) { console.error("Health metrics save failed:", e); }
             finally { btnSaveHealth.classList.remove('btn-loading'); }
         };
     }
 
+    /**
+     * Loads health history and renders comparative charts.
+     */
     async function loadHealthMetrics() {
         const historyBody = document.getElementById('health-history-body');
         if (!historyBody) return;
@@ -344,12 +353,12 @@ document.addEventListener('DOMContentLoaded', () => {
             if (res.ok) {
                 const metrics = await res.json();
                 if (metrics.length === 0) {
-                    historyBody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Nicio metrică găsită.</td></tr>';
+                    historyBody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No health data recorded.</td></tr>';
                     return;
                 }
                 historyBody.innerHTML = metrics.map(m => `
                     <tr>
-                        <td><strong>${new Date(m.date).toLocaleDateString('ro-RO')}</strong></td>
+                        <td><strong>${new Date(m.date).toLocaleDateString()}</strong></td>
                         <td>${m.hrv} ms</td>
                         <td>${m.sleepHours} h</td>
                         <td>${m.stressLevel}/100</td>
@@ -359,7 +368,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 renderHealthChart(metrics);
             }
-        } catch (e) { console.error("Eroare încărcare metrici:", e); }
+        } catch (e) { console.error("Health load failed:", e); }
     }
 
     function renderHealthChart(metrics) {
@@ -368,24 +377,21 @@ document.addEventListener('DOMContentLoaded', () => {
         const ctx = canvas.getContext('2d');
         if (healthChartInstance) healthChartInstance.destroy();
 
-        // Sortăm metricile cronologic pentru grafic (backend le dă DESC probabil)
         const sortedMetrics = [...metrics].reverse();
 
         healthChartInstance = new Chart(ctx, {
             type: 'line',
             data: {
-                labels: sortedMetrics.map(m => new Date(m.date).toLocaleDateString('ro-RO')),
+                labels: sortedMetrics.map(m => new Date(m.date).toLocaleDateString()),
                 datasets: [
                     { label: 'HRV (ms)', data: sortedMetrics.map(m => m.hrv), borderColor: '#2ecc71', tension: 0.1 },
-                    { label: 'Somn (ore)', data: sortedMetrics.map(m => m.sleepHours), borderColor: '#3498db', tension: 0.1 },
-                    { label: 'Stres', data: sortedMetrics.map(m => m.stressLevel), borderColor: '#e74c3c', tension: 0.1 }
+                    { label: 'Sleep (h)', data: sortedMetrics.map(m => m.sleepHours), borderColor: '#3498db', tension: 0.1 },
+                    { label: 'Stress', data: sortedMetrics.map(m => m.stressLevel), borderColor: '#e74c3c', tension: 0.1 }
                 ]
             },
-            options: { 
-                responsive: true, 
-                plugins: { 
-                    legend: { labels: { color: '#fff' } } 
-                },
+            options: {
+                responsive: true,
+                plugins: { legend: { labels: { color: '#fff' } } },
                 scales: {
                     x: { ticks: { color: '#888' }, grid: { color: '#222' } },
                     y: { ticks: { color: '#888' }, grid: { color: '#222' } }
@@ -394,88 +400,67 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // --- Funcții Utilitare pentru UI ---
+    /**
+     * Converts AI Markdown responses to interactive HTML.
+     */
     function formatAIResponse(text) {
         if (!text) return "";
-        
-        // 1. Transformă bold-ul (**text**) în tag-uri strong
         let formatted = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-
-        // 2. Identifică și formatează listele numerotate (1. , 2. , etc)
-        // Căutăm blocuri de linii care încep cu cifre
         formatted = formatted.replace(/(?:^\d+\.\s+.*\n?)+/gm, (match) => {
             const items = match.trim().split('\n').map(line => `<li>${line.replace(/^\d+\.\s+/, '')}</li>`).join('');
             return `<ol style="margin-left: 20px; margin-top: 10px; margin-bottom: 10px;">${items}</ol>`;
         });
-
-        // 3. Identifică și formatează listele cu puncte (- sau *)
         formatted = formatted.replace(/(?:^\s*[\-\*]\s+.*\n?)+/gm, (match) => {
             const items = match.trim().split('\n').map(line => `<li>${line.replace(/^\s*[\-\*]\s+/, '')}</li>`).join('');
             return `<ul style="margin-left: 20px; margin-top: 10px; margin-bottom: 10px;">${items}</ul>`;
         });
-
-        // 4. Transformă newline în br pentru textul normal (evităm dublarea br după liste)
-        // Înlocuim \n doar dacă nu este imediat după un tag de listă
-        formatted = formatted.replace(/\n/g, '<br>');
-        
-        return formatted;
+        return formatted.replace(/\n/g, '<br>');
     }
 
-    // --- Fitness Level ---
+    // --- 7. FITNESS LEVEL SUMMARY ---
+    /**
+     * Fetches AI-derived fitness profile and populates dashboards.
+     */
     async function loadFitnessLevel() {
         const summary = document.getElementById('fitness-summary');
         const loading = document.getElementById('fitness-loading');
-        
+
         if (loading) loading.style.display = 'block';
         if (summary) summary.style.display = 'none';
 
         try {
-            console.log(`Fetching fitness level for user: ${user.id}`);
             const res = await fetch(`${API_BASE}/fitness-level/summary/${user.id}`);
-
             if (!res.ok) {
-                console.error(`Fitness API error: ${res.status} ${res.statusText}`);
                 showFitnessDemoData();
                 return;
             }
 
             const data = await res.json();
-            console.log("Fitness data received:", data);
-
-            // Check if data has required fields
-            if (!data || typeof data !== 'object') {
-                console.error("Invalid fitness data format");
-                showFitnessDemoData();
-                return;
-            }
-
-            // Helper pentru parsare sigură de numere
             const parseN = (val, fallback = 0) => {
                 const n = parseFloat(val);
                 return isNaN(n) ? fallback : n;
             };
 
-            // Populate datele
             document.getElementById('fitness-vo2').innerText = parseN(data.vo2_max, 45).toFixed(1);
             document.getElementById('fitness-battery').innerText = parseN(data.body_battery, 70);
-            document.getElementById('fitness-score').innerText = parseN(data.fitness_level_score, 5) + ' / 10';
+            document.getElementById('fitness-score').innerText = `${parseN(data.fitness_level_score, 5)} / 10`;
             document.getElementById('fitness-category').innerText = data.fitness_category || '--';
 
-            document.getElementById('fitness-5k').innerText = parseN(data.estimated_5k_time, 25).toFixed(1) + ' min';
-            document.getElementById('fitness-10k').innerText = parseN(data.estimated_10k_time, 50).toFixed(1) + ' min';
-            document.getElementById('fitness-marathon').innerText = parseN(data.estimated_marathon_time, 4).toFixed(2) + ' ore';
+            document.getElementById('fitness-5k').innerText = `${parseN(data.estimated_5k_time, 25).toFixed(1)} min`;
+            document.getElementById('fitness-10k').innerText = `${parseN(data.estimated_10k_time, 50).toFixed(1)} min`;
+            document.getElementById('fitness-marathon').innerText = `${parseN(data.estimated_marathon_time, 4).toFixed(2)} hours`;
 
-            document.getElementById('fitness-pushup').innerText = parseN(data.pushup_estimate, 0) + ' reps';
-            document.getElementById('fitness-pullup').innerText = parseN(data.pullup_estimate, 0) + ' reps';
-            document.getElementById('fitness-bench').innerText = parseN(data.bench_press_estimate, 0).toFixed(1) + ' kg';
-            document.getElementById('fitness-deadlift').innerText = parseN(data.deadlift_estimate, 0).toFixed(1) + ' kg';
+            document.getElementById('fitness-pushup').innerText = `${parseN(data.pushup_estimate, 0)} reps`;
+            document.getElementById('fitness-pullup').innerText = `${parseN(data.pullup_estimate, 0)} reps`;
+            document.getElementById('fitness-bench').innerText = `${parseN(data.bench_press_estimate, 0).toFixed(1)} kg`;
+            document.getElementById('fitness-deadlift').innerText = `${parseN(data.deadlift_estimate, 0).toFixed(1)} kg`;
 
-            document.getElementById('fitness-insights').innerText = data.ai_insights || 'Nu avem date suficiente.';
-            document.getElementById('fitness-strengths').innerText = data.strength_weaknesses || 'Nu avem date suficiente.';
+            document.getElementById('fitness-insights').innerText = data.ai_insights || 'Insufficient data.';
+            document.getElementById('fitness-strengths').innerText = data.strength_weaknesses || 'Insufficient data.';
 
             if (summary) summary.style.display = 'block';
         } catch (e) {
-            console.error("Eroare la încărcare fitness level:", e);
+            console.error("Fitness profile fetch failed:", e);
             showFitnessDemoData();
         } finally {
             if (loading) loading.style.display = 'none';
@@ -483,43 +468,36 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function showFitnessDemoData() {
-        // Demo data when API fails
         document.getElementById('fitness-vo2').innerText = '45.5';
         document.getElementById('fitness-battery').innerText = '72';
         document.getElementById('fitness-score').innerText = '7 / 10';
         document.getElementById('fitness-category').innerText = 'Intermediate';
-
         document.getElementById('fitness-5k').innerText = '25.5 min';
         document.getElementById('fitness-10k').innerText = '54.0 min';
-        document.getElementById('fitness-marathon').innerText = '3.50 ore';
-
+        document.getElementById('fitness-marathon').innerText = '3.50 hours';
         document.getElementById('fitness-pushup').innerText = '35 reps';
         document.getElementById('fitness-pullup').innerText = '12 reps';
         document.getElementById('fitness-bench').innerText = '100.0 kg';
         document.getElementById('fitness-deadlift').innerText = '150.0 kg';
-        document.getElementById('fitness-insights').innerText = 'Mod Demo: Ești într-o formă bună!';
-        document.getElementById('fitness-strengths').innerText = 'Mod Demo: Cardio bun, forță medie.';
+        document.getElementById('fitness-insights').innerText = 'Demo: You are in good health!';
+        document.getElementById('fitness-strengths').innerText = 'Demo: Strong cardio, moderate strength.';
 
         const summary = document.getElementById('fitness-summary');
         if (summary) summary.style.display = 'block';
     }
 
-    // Auto-load fitness level la click pe tab
     const fitnessLevelTab = document.querySelector('[data-target="fitness-level-section"]');
     if (fitnessLevelTab) {
-        fitnessLevelTab.addEventListener('click', () => {
-            loadFitnessLevel();
-        });
+        fitnessLevelTab.addEventListener('click', () => loadFitnessLevel());
     }
 
-    function typeWriter(element, text, speed = 10) {
+    /**
+     * Handles text injection with a smooth fade-in animation.
+     */
+    function typeWriter(element, text) {
         element.innerHTML = "";
         element.style.display = "block";
-        let i = 0;
         const formattedText = formatAIResponse(text);
-        
-        // Pentru rapiditate și structură, injectăm direct HTML-ul formatat
-        // dar putem face un mic efect de fade-in
         element.style.opacity = 0;
         element.innerHTML = formattedText;
         let opacity = 0;
@@ -530,7 +508,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 30);
     }
 
-    // --- 7. ALTE FUNCȚII AI ---
+    // --- 8. AI ASSISTANTS (ADVICE, MEALS, WORKOUTS) ---
     const btnPredict = document.getElementById('btn-predictie');
     if (btnPredict) {
         btnPredict.onclick = async () => {
@@ -542,14 +520,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (res.ok) {
                     const data = await res.json();
                     typeWriter(summary, data.summary);
-                    typeWriter(recommendation, `**Recomandare:** ${data.recommendation}`);
+                    typeWriter(recommendation, `**Recommendation:** ${data.recommendation}`);
                 }
-            } catch (e) { summary.innerText = "Eroare AI."; }
+            } catch (e) { summary.innerText = "AI assistant unavailable."; }
             finally { btnPredict.classList.remove('btn-loading'); }
         };
     }
 
-    // Nutriție AI
     const btnAnalyzeMeal = document.getElementById('btn-analyze-meal');
     if (btnAnalyzeMeal) {
         btnAnalyzeMeal.onclick = async () => {
@@ -564,8 +541,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
                 if (res.ok) {
                     const data = await res.json();
-                    typeWriter(feedbackBox, `**Calorii:** ${data.calories} kcal<br>**Feedback:** ${data.feedback}`);
-                    // Auto-refresh fitness level după analiză masă
+                    typeWriter(feedbackBox, `**Estimated Calories:** ${data.calories} kcal<br>**Feedback:** ${data.feedback}`);
                     loadFitnessLevel();
                 }
             } catch (e) { console.error(e); }
@@ -573,7 +549,6 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     }
 
-    // --- Recovery AI Chat ---
     const btnSendRecovery = document.getElementById('btn-send-recovery');
     const recoveryInput = document.getElementById('recovery-chat-input');
     const chatContainer = document.getElementById('recovery-chat-container');
@@ -588,7 +563,7 @@ document.addEventListener('DOMContentLoaded', () => {
             userDiv.className = "user-msg";
             userDiv.innerText = text;
             chatContainer.appendChild(userDiv);
-            
+
             recoveryInput.value = '';
             btnSendRecovery.classList.add('btn-loading');
 
@@ -606,19 +581,16 @@ document.addEventListener('DOMContentLoaded', () => {
                     const data = await res.json();
                     const aiDiv = document.createElement('div');
                     aiDiv.className = "ai-msg";
-                    if (data.is_final_protocol) {
-                        aiDiv.style.borderLeftColor = "#2ecc71";
-                    }
-                    
+                    if (data.is_final_protocol) aiDiv.style.borderLeftColor = "#2ecc71";
+
                     chatContainer.appendChild(aiDiv);
                     typeWriter(aiDiv, data.message);
-                    
+
                     recoveryChatHistory.push({ role: "user", content: text });
                     recoveryChatHistory.push({ role: "assistant", content: data.message });
                     if (recoveryChatHistory.length > 10) recoveryChatHistory.shift();
-                    
+
                     chatContainer.scrollTop = chatContainer.scrollHeight;
-                    // Auto-refresh fitness level după chat recuperare
                     loadFitnessLevel();
                 }
             } catch (e) { console.error(e); }
@@ -629,7 +601,6 @@ document.addEventListener('DOMContentLoaded', () => {
         recoveryInput.onkeypress = (e) => { if (e.key === 'Enter') sendMessage(); };
     }
 
-    // --- 8. GENERARE MASĂ PERSONALIZATĂ AI ---
     const btnGenMeal = document.getElementById('btn-generate-meal');
     if (btnGenMeal) {
         btnGenMeal.onclick = async () => {
@@ -637,7 +608,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const resultBox = document.getElementById('ai-meal-result');
 
             if (!ingredients) {
-                alert("Te rugăm să introduci ce ingrediente ai la dispoziție!");
+                alert("Please list your available ingredients!");
                 return;
             }
 
@@ -652,16 +623,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (res.ok) {
                     const data = await res.json();
                     resultBox.style.display = "block";
-                    const content = `**${data.meal_name}**<br><br>${data.recipe}<br><br>**Nutriție:** ${data.nutritional_info}<br><br>*Note: ${data.ai_reasoning}*`;
-                    
-                    // Curățăm elementele vechi și folosim typeWriter
+                    const content = `**${data.meal_name}**<br><br>${data.recipe}<br><br>**Nutrition:** ${data.nutritional_info}<br><br>*Rationale: ${data.ai_reasoning}*`;
+
                     resultBox.innerHTML = "";
                     const innerDiv = document.createElement('div');
                     resultBox.appendChild(innerDiv);
                     typeWriter(innerDiv, content);
-                    
+
                     resultBox.scrollIntoView({ behavior: 'smooth' });
-                    // Auto-refresh fitness level după generare masă
                     loadFitnessLevel();
                 }
             } catch (e) { console.error(e); }
@@ -669,15 +638,14 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     }
 
-    // --- 9. GENERARE ANTRENAMENT PERSONALIZAT AI ---
     const btnGenWorkout = document.getElementById('btn-generate-workout');
     if (btnGenWorkout) {
         btnGenWorkout.onclick = async () => {
             const userInput = document.getElementById('ai-workout-input').value;
             const resultBox = document.getElementById('ai-workout-result');
-            
+
             if (!userInput) {
-                alert("Te rugăm să introduci câteva detalii despre ce antrenament dorești!");
+                alert("Please describe your workout preferences!");
                 return;
             }
 
@@ -692,15 +660,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (res.ok) {
                     const data = await res.json();
                     resultBox.style.display = "block";
-                    const content = `**${data.workout_name}**<br><br>${data.exercises}<br><br>**De ce acest plan:** ${data.ai_notes}`;
-                    
+                    const content = `**${data.workout_name}**<br><br>${data.exercises}<br><br>**Rationale:** ${data.ai_notes}`;
+
                     resultBox.innerHTML = "";
                     const innerDiv = document.createElement('div');
                     resultBox.appendChild(innerDiv);
                     typeWriter(innerDiv, content);
-                    
+
                     resultBox.scrollIntoView({ behavior: 'smooth' });
-                    // Auto-refresh fitness level după generare antrenament
                     loadFitnessLevel();
                 }
             } catch (e) { console.error(e); }

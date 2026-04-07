@@ -20,6 +20,9 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
+/**
+ * Unit tests for WorkoutController.
+ */
 public class WorkoutControllerTest {
 
     @Mock
@@ -36,9 +39,11 @@ public class WorkoutControllerTest {
         MockitoAnnotations.openMocks(this);
     }
 
+    /**
+     * Verifies that workout history is correctly retrieved and mapped for a given user.
+     */
     @Test
     public void testGetWorkoutHistory() {
-        // 1. Pregătim datele fictive (Mock data)
         Long userId = 1L;
         User user = new User();
         user.setId(userId);
@@ -49,42 +54,49 @@ public class WorkoutControllerTest {
         w1.setDuration(60);
         workouts.add(w1);
 
-        // 2. Configurăm comportamentul Mock-urilor
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
         when(workoutRepository.findByUserIdOrderByDateDesc(userId)).thenReturn(workouts);
 
-        // 3. Executăm metoda din Controller
         ResponseEntity<List<Workout>> response = workoutController.getWorkoutHistory(userId);
 
-        // 4. Verificăm rezultatele
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(1, response.getBody().size());
         assertEquals("Gym", response.getBody().get(0).getType());
         
-        // Verificăm dacă repository-ul a fost apelat exact o dată
         verify(workoutRepository, times(1)).findByUserIdOrderByDateDesc(userId);
     }
 
+    /**
+     * Ensures that adding a workout with a negative duration returns a Bad Request status.
+     */
     @Test
     public void testAddWorkoutNegativeDuration() {
-        // Test profesional: Validarea datelor (Sanity Check)
-        // Nu ar trebui să putem salva un antrenament cu durată negativă
         Long userId = 1L;
-        User user = new User();
-        user.setId(userId);
-        
         Workout workout = new Workout();
-        workout.setDuration(-10); // Durată imposibilă
-        
-        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+        workout.setDuration(-10);
 
         ResponseEntity<?> response = workoutController.addWorkout(userId, workout);
 
-        // Dacă controller-ul are logică de validare, ar trebui să returneze Bad Request
-        // În acest proiect, verificăm dacă sistemul este pregătit pentru această logică.
-        // Chiar dacă acum salvăm, testul va semnala că avem nevoie de validare la nivel de business.
-        if (workout.getDuration() < 0) {
-            assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-        }
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertEquals("Workout duration cannot be negative.", response.getBody());
+        verify(workoutRepository, never()).save(any(Workout.class));
+    }
+
+    /**
+     * Validates that attempting to log a workout for a non-existent user returns a Not Found status.
+     */
+    @Test
+    public void testAddWorkoutUserNotFound() {
+        Long userId = 999L;
+        Workout workout = new Workout();
+        workout.setType("Running");
+        workout.setDuration(30);
+
+        when(userRepository.findById(userId)).thenReturn(Optional.empty());
+
+        ResponseEntity<?> response = workoutController.addWorkout(userId, workout);
+
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        verify(workoutRepository, never()).save(any(Workout.class));
     }
 }
