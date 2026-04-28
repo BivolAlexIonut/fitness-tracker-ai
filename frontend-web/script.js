@@ -728,3 +728,56 @@ function stopTimer() {
     display.textContent = "00:00";
     display.style.color = "#4caf50";
 }
+/**
+ * FEATURE: Feedback Bot AI Logic
+ */
+function toggleFeedbackBody() {
+    const body = document.getElementById('feedback-body');
+    const icon = document.getElementById('feedback-toggle-icon');
+    if (body.style.display === 'none' || body.style.display === '') {
+        body.style.display = 'block';
+        icon.className = 'fas fa-chevron-down';
+    } else {
+        body.style.display = 'none';
+        icon.className = 'fas fa-chevron-up';
+    }
+}
+
+async function sendFeedback() {
+    const textInput = document.getElementById('feedback-text');
+    const text = textInput.value.trim();
+    if (!text) return;
+
+    try {
+
+        const aiRes = await fetch('http://localhost:8000/analyze-feedback', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: text })
+        });
+        const aiData = await aiRes.json();
+        const category = aiData.category;
+
+
+        const currentUserId = localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')).id : 1; // Fallback la id 1
+
+        await fetch('http://localhost:8080/api/feedback', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                userId: currentUserId,
+                text: text,
+                category: category
+            })
+        });
+
+
+        alert(`Mulțumim! AI-ul nostru a înregistrat mesajul tău ca: ${category}`);
+        textInput.value = '';
+        toggleFeedbackBody();
+
+    } catch (error) {
+        console.error("Eroare la trimiterea feedback-ului:", error);
+        alert("A apărut o eroare. Te rugăm să încerci din nou mai târziu.");
+    }
+}

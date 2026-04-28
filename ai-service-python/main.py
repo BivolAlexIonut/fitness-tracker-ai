@@ -351,3 +351,29 @@ async def get_fitness_summary(request: FitnessSummaryRequest):
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="127.0.0.1", port=8006)
+
+# --- FEATURE: FEEDBACK CLASSIFIER ---
+class FeedbackRequest(BaseModel):
+    text: str
+
+@app.post("/analyze-feedback")
+async def analyze_feedback(request: FeedbackRequest):
+    try:
+        model = genai.GenerativeModel('gemini-pro')
+        prompt = f"""
+        Ești un asistent care analizează feedback-ul utilizatorilor pentru o aplicație de fitness.
+        Clasifică următorul mesaj STRICT într-una din aceste 3 categorii: BUG, SUGESTIE, sau APRECIERE.
+        Returnează DOAR cuvântul categoriei, fără nicio altă explicație.
+
+        Mesaj: "{request.text}"
+        """
+        response = model.generate_content(prompt)
+        category = response.text.strip().upper()
+
+
+        if category not in ["BUG", "SUGESTIE", "APRECIERE"]:
+            category = "ALTUL"
+
+        return {"category": category}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
