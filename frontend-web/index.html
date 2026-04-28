@@ -290,6 +290,16 @@
             </div>
             <div class="form-group"><label>Intensitate</label><select id="w-intensity" class="modern-select"><option value="Low">Ușoară</option><option value="Medium" selected>Moderată</option><option value="High">Intensă</option><option value="Max">Maximală</option></select></div>
             <div class="form-group"><label>Detalii (Exerciții / Note)</label><textarea id="w-details" class="modern-textarea" placeholder="Notează seturile sau traseul..."></textarea></div>
+            <div id="rest-timer-section" style="margin-top: 15px; padding: 15px; background: #2c2f33; border-radius: 8px; color: white; text-align: center; border: 1px solid #444;">
+                <h4 style="margin-bottom: 10px; font-weight: normal; font-size: 0.9rem; color: #aaa;">⏱️ Cronometru Pauză</h4>
+                <div id="timer-display" style="color: #4caf50; font-weight: bold; font-size: 1.8rem; margin-bottom: 10px; font-family: monospace;">00:00</div>
+                <div style="display: flex; gap: 8px; justify-content: center;">
+                    <button type="button" onclick="startTimer(60)" style="background: #444; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">60s</button>
+                    <button type="button" onclick="startTimer(90)" style="background: #444; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">90s</button>
+                    <button type="button" onclick="startTimer(120)" style="background: #444; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">120s</button>
+                    <button type="button" onclick="stopTimer()" style="background: #d32f2f; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">Stop</button>
+                </div>
+            </div>
             <div style="display:flex; gap:10px; margin-top:20px;">
                 <button type="submit" class="btn-save" style="flex:2">Salvează Antrenamentul</button>
                 <button type="button" onclick="document.getElementById('workout-modal').style.display='none'" class="btn-cancel" style="flex:1">Anulează</button>

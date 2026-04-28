@@ -675,3 +675,56 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     }
 });
+
+
+let timerInterval = null;
+
+function startTimer(seconds) {
+
+    if (timerInterval) clearInterval(timerInterval);
+
+    let timeLeft = seconds;
+    const display = document.getElementById('timer-display');
+
+
+    const updateDisplay = (s) => {
+        const mins = Math.floor(s / 60);
+        const secs = s % 60;
+        display.textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    };
+
+    updateDisplay(timeLeft);
+
+    timerInterval = setInterval(() => {
+        timeLeft--;
+        if (timeLeft >= 0) {
+            updateDisplay(timeLeft);
+        }
+
+        if (timeLeft <= 0) {
+            clearInterval(timerInterval);
+            display.textContent = "GATA!";
+            display.style.color = "#ff9800"; // Se face portocaliu când expiră
+
+
+            const audio = new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg');
+            audio.play().catch(e => console.log("Audio play blocked by browser"));
+
+
+            setTimeout(() => {
+                display.style.color = "#4caf50";
+                if(display.textContent === "GATA!") display.textContent = "00:00";
+            }, 3000);
+        }
+    }, 1000);
+}
+
+function stopTimer() {
+    if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+    }
+    const display = document.getElementById('timer-display');
+    display.textContent = "00:00";
+    display.style.color = "#4caf50";
+}
