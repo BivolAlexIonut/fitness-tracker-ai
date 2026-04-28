@@ -128,6 +128,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     historyBody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No workout logs found.</td></tr>';
                     return;
                 }
+
                 historyBody.innerHTML = workouts.map(w => `
                     <tr>
                         <td><strong>${new Date(w.date).toLocaleDateString()}</strong></td>
@@ -749,7 +750,7 @@ async function sendFeedback() {
     if (!text) return;
 
     try {
-
+        // 1. Trimitem la Python pentru a clasifica folosind AI
         const aiRes = await fetch('http://localhost:8000/analyze-feedback', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -781,3 +782,23 @@ async function sendFeedback() {
         alert("A apărut o eroare. Te rugăm să încerci din nou mai târziu.");
     }
 }
+
+const sfaturi = [
+    "Hidratarea este cheia! Bea un pahar cu apă acum. 💧",
+    "Consistența bate intensitatea. Rămâi activ! 🔥",
+    "Nu uita de stretching după antrenament. 🧘‍♂️",
+    "Somnul este cel mai bun supliment pentru recuperare. 😴",
+    "Fiecare pas contează, indiferent cât de mic este. 👣",
+    "Proteinele ajută la reconstrucția musculară. 🥩",
+    "Zâmbește! Endorfinele sunt gratis. 😊"
+];
+
+function afiseazaSfatRandom() {
+    const textElement = document.getElementById('motivation-text');
+    if (textElement) {
+        const index = Math.floor(Math.random() * sfaturi.length);
+        textElement.innerText = `"${sfaturi[index]}"`;
+    }
+}
+
+afiseazaSfatRandom();
