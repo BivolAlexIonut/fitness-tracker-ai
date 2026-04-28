@@ -341,7 +341,28 @@ document.addEventListener('DOMContentLoaded', () => {
             finally { btnSaveHealth.classList.remove('btn-loading'); }
         };
     }
+    const btnCopy = document.getElementById('btn-copy-ai');
+    if (btnCopy) {
+        btnCopy.onclick = () => {
 
+            const textSumar = document.getElementById('ai-summary').innerText;
+            const textRec = document.getElementById('ai-recommendation').innerText;
+            const textFinal = `${textSumar}\n\n${textRec}`;
+
+
+            navigator.clipboard.writeText(textFinal).then(() => {
+
+                const originalHTML = btnCopy.innerHTML;
+                btnCopy.innerHTML = '<i class="fas fa-check"></i> Copiat!';
+                btnCopy.style.background = '#2ecc71'; 
+
+                setTimeout(() => {
+                    btnCopy.innerHTML = originalHTML;
+                    btnCopy.style.background = '#333';
+                }, 2000);
+            });
+        };
+    }
     /**
      * Loads health history and renders comparative charts.
      */
