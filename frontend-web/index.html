@@ -6,6 +6,7 @@
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 </head>
 <body>
 <script>if (!localStorage.getItem('user')) window.location.href = 'auth.html';</script>
@@ -30,6 +31,17 @@
         <div class="card-motivation" style="margin-top: 30px; padding: 15px; background: rgba(255,255,255,0.05); border-radius: 10px; border-left: 3px solid #4caf50;">
             <small style="color: #888; text-transform: uppercase; font-size: 0.7rem;">Sfatul Antrenorului AI:</small>
             <p id="motivation-text" style="font-size: 0.9rem; color: #ccc; margin-top: 5px; font-style: italic;">"Pregătește-te de succes!"</p>
+        </div>
+        <div class="music-box" style="margin-top: 20px; padding: 10px; border-top: 1px solid #333;">
+            <h4 style="font-size: 0.8rem; color: #888; margin-bottom: 10px; text-transform: uppercase;">
+                <i class="fas fa-headphones"></i> Gym Motivation
+            </h4>
+            <iframe style="border-radius:12px"
+                    src="https://open.spotify.com/playlist/2SM6rniZl84fEyMCB5KMQB?si=gSfgjEPETf2QjH8N-49dmQ"
+                    width="100%" height="152" frameBorder="0" allowfullscreen=""
+                    allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                    loading="lazy">
+            </iframe>
         </div>
     </aside>
 

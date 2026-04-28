@@ -519,3 +519,12 @@ tr:hover td { background: #0a0a0a; }
     .fitness-metrics-grid { grid-template-columns: 1fr 1fr; }
     .summary-details-grid, .ai-insights-container { grid-template-columns: 1fr; }
 }
+
+.music-box iframe {
+    box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+    transition: transform 0.3s ease;
+}
+
+.music-box iframe:hover {
+    transform: scale(1.02);
+}
