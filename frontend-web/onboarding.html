@@ -3,19 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <title>Personalizare AI - FitnessTracker AI</title>
+    <script>document.documentElement.setAttribute('data-theme', localStorage.getItem('theme') || 'dark');</script>
     <link rel="stylesheet" href="style.css">
     <style>
-        body { display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #000; margin: 0; font-family: 'Inter', sans-serif; }
-        .onboarding-card { max-width: 600px; width: 90%; background: #0a0a0a; padding: 40px; border-radius: 12px; border: 1px solid #222; }
+        body { display: flex; align-items: center; justify-content: center; min-height: 100vh; background: var(--bg-base); margin: 0; font-family: 'Inter', 'Segoe UI', sans-serif; }
+        .onboarding-card { max-width: 600px; width: 90%; background: var(--bg-card); padding: 40px; border-radius: 12px; border: 1px solid var(--border-color); }
         .step-indicator { display: flex; gap: 10px; margin-bottom: 30px; }
-        .step { flex: 1; height: 4px; background: #222; border-radius: 2px; }
-        .step.active { background: #fff; }
+        .step { flex: 1; height: 4px; background: var(--border-color); border-radius: 2px; }
+        .step.active { background: var(--text-main); }
         .option-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 30px; }
-        .option-card { background: #000; border: 1px solid #222; padding: 25px 20px; border-radius: 12px; cursor: pointer; text-align: center; transition: 0.3s; }
-        .option-card h3 { font-size: 15px; margin: 0; color: #fff; }
-        .option-card.selected { border-color: #fff; background: #111; }
+        .option-card { background: var(--bg-input); border: 1px solid var(--border-color); padding: 25px 20px; border-radius: 12px; cursor: pointer; text-align: center; transition: 0.3s; }
+        .option-card h3 { font-size: 15px; margin: 0; color: var(--text-main); }
+        .option-card.selected { border-color: var(--text-main); background: var(--bg-elevated); }
         .hidden { display: none; }
-        h2 { color: #fff; margin-bottom: 20px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
+        h2 { color: var(--text-main); margin-bottom: 20px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
     </style>
 </head>
 <body>

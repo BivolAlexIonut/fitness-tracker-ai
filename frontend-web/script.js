@@ -37,6 +37,29 @@ document.addEventListener('DOMContentLoaded', () => {
     const displayUsername = document.getElementById('display-username');
     if (displayUsername) displayUsername.innerText = user.username;
 
+    // --- 1b. THEME (DARK / LIGHT) ---
+    const cssVar = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+
+    const themeToggle = document.getElementById('btn-theme-toggle');
+    const applyThemeIcon = (theme) => {
+        const icon = themeToggle?.querySelector('i');
+        if (icon) icon.className = theme === 'light' ? 'fas fa-sun' : 'fas fa-moon';
+    };
+
+    let currentTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    applyThemeIcon(currentTheme);
+
+    if (themeToggle) {
+        themeToggle.onclick = () => {
+            currentTheme = currentTheme === 'light' ? 'dark' : 'light';
+            document.documentElement.setAttribute('data-theme', currentTheme);
+            localStorage.setItem('theme', currentTheme);
+            applyThemeIcon(currentTheme);
+            rerenderThemedCharts(); // graficele preiau noile culori
+        };
+    }
+
     // --- 2. NAVIGATION & UI ORCHESTRATION ---
     const tabBtns = document.querySelectorAll('.tab-btn');
     const tabContents = document.querySelectorAll('.tab-content');
@@ -269,30 +292,44 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (e) { console.error("AI PR analysis failed:", e); }
     }
 
+    let lastPRRender = null;
+    let lastHealthRender = null;
+
     function renderPRChart(history, trendData) {
         const canvas = document.getElementById('pr-chart');
         if (!canvas) return;
         const ctx = canvas.getContext('2d');
         if (prChartInstance) prChartInstance.destroy();
 
+        lastPRRender = { history, trendData };
+        const mainColor = cssVar('--text-main') || '#fff';
+        const tick = cssVar('--chart-tick') || '#888';
+        const grid = cssVar('--chart-grid') || '#222';
+
         prChartInstance = new Chart(ctx, {
             type: 'line',
             data: {
                 labels: history.map(h => new Date(h.date).toLocaleDateString()),
                 datasets: [
-                    { label: 'Real (kg)', data: history.map(h => h.weight), borderColor: '#ffffff', tension: 0.1, backgroundColor: 'rgba(255,255,255,0.1)', fill: true },
+                    { label: 'Real (kg)', data: history.map(h => h.weight), borderColor: mainColor, tension: 0.1, backgroundColor: 'rgba(128,128,128,0.12)', fill: true },
                     { label: 'AI Trend', data: trendData, borderColor: '#888888', borderDash: [5, 5], fill: false }
                 ]
             },
             options: {
                 responsive: true,
-                plugins: { legend: { labels: { color: '#fff' } } },
+                plugins: { legend: { labels: { color: mainColor } } },
                 scales: {
-                    x: { ticks: { color: '#888' }, grid: { color: '#222' } },
-                    y: { ticks: { color: '#888' }, grid: { color: '#222' } }
+                    x: { ticks: { color: tick }, grid: { color: grid } },
+                    y: { ticks: { color: tick }, grid: { color: grid } }
                 }
             }
         });
+    }
+
+    // Re-randează graficele existente cu paleta temei curente
+    function rerenderThemedCharts() {
+        if (lastPRRender) renderPRChart(lastPRRender.history, lastPRRender.trendData);
+        if (lastHealthRender) renderHealthChart(lastHealthRender);
     }
 
     const prSelect = document.getElementById('pr-exercise');
@@ -354,11 +391,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 const originalHTML = btnCopy.innerHTML;
                 btnCopy.innerHTML = '<i class="fas fa-check"></i> Copiat!';
-                btnCopy.style.background = '#2ecc71'; 
+                btnCopy.style.background = 'var(--accent-green)';
+                btnCopy.style.color = '#fff';
 
                 setTimeout(() => {
                     btnCopy.innerHTML = originalHTML;
-                    btnCopy.style.background = '#333';
+                    btnCopy.style.background = '';
+                    btnCopy.style.color = '';
                 }, 2000);
             });
         };
@@ -399,6 +438,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const ctx = canvas.getContext('2d');
         if (healthChartInstance) healthChartInstance.destroy();
 
+        lastHealthRender = metrics;
+        const mainColor = cssVar('--text-main') || '#fff';
+        const tick = cssVar('--chart-tick') || '#888';
+        const grid = cssVar('--chart-grid') || '#222';
         const sortedMetrics = [...metrics].reverse();
 
         healthChartInstance = new Chart(ctx, {
@@ -413,10 +456,10 @@ document.addEventListener('DOMContentLoaded', () => {
             },
             options: {
                 responsive: true,
-                plugins: { legend: { labels: { color: '#fff' } } },
+                plugins: { legend: { labels: { color: mainColor } } },
                 scales: {
-                    x: { ticks: { color: '#888' }, grid: { color: '#222' } },
-                    y: { ticks: { color: '#888' }, grid: { color: '#222' } }
+                    x: { ticks: { color: tick }, grid: { color: grid } },
+                    y: { ticks: { color: tick }, grid: { color: grid } }
                 }
             }
         });
@@ -697,112 +740,6 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     }
 });
-
-
-let timerInterval = null;
-
-function startTimer(seconds) {
-
-    if (timerInterval) clearInterval(timerInterval);
-
-    let timeLeft = seconds;
-    const display = document.getElementById('timer-display');
-
-
-    const updateDisplay = (s) => {
-        const mins = Math.floor(s / 60);
-        const secs = s % 60;
-        display.textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-    };
-
-    updateDisplay(timeLeft);
-
-    timerInterval = setInterval(() => {
-        timeLeft--;
-        if (timeLeft >= 0) {
-            updateDisplay(timeLeft);
-        }
-
-        if (timeLeft <= 0) {
-            clearInterval(timerInterval);
-            display.textContent = "GATA!";
-            display.style.color = "#ff9800"; // Se face portocaliu când expiră
-
-
-            const audio = new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg');
-            audio.play().catch(e => console.log("Audio play blocked by browser"));
-
-
-            setTimeout(() => {
-                display.style.color = "#4caf50";
-                if(display.textContent === "GATA!") display.textContent = "00:00";
-            }, 3000);
-        }
-    }, 1000);
-}
-
-function stopTimer() {
-    if (timerInterval) {
-        clearInterval(timerInterval);
-        timerInterval = null;
-    }
-    const display = document.getElementById('timer-display');
-    display.textContent = "00:00";
-    display.style.color = "#4caf50";
-}
-/**
- * FEATURE: Feedback Bot AI Logic
- */
-function toggleFeedbackBody() {
-    const body = document.getElementById('feedback-body');
-    const icon = document.getElementById('feedback-toggle-icon');
-    if (body.style.display === 'none' || body.style.display === '') {
-        body.style.display = 'block';
-        icon.className = 'fas fa-chevron-down';
-    } else {
-        body.style.display = 'none';
-        icon.className = 'fas fa-chevron-up';
-    }
-}
-
-async function sendFeedback() {
-    const textInput = document.getElementById('feedback-text');
-    const text = textInput.value.trim();
-    if (!text) return;
-
-    try {
-        // 1. Trimitem la Python pentru a clasifica folosind AI
-        const aiRes = await fetch('http://localhost:8000/analyze-feedback', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ text: text })
-        });
-        const aiData = await aiRes.json();
-        const category = aiData.category;
-
-
-        const currentUserId = localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')).id : 1; // Fallback la id 1
-
-        await fetch('http://localhost:8080/api/feedback', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                userId: currentUserId,
-                text: text,
-                category: category
-            })
-        });
-
-
-        alert(`Mulțumim! AI-ul nostru a înregistrat mesajul tău ca: ${category}`);
-        textInput.value = '';
-        toggleFeedbackBody();
-
-    } catch (error) {
-        console.error("Eroare la trimiterea feedback-ului:", error);
-        alert("A apărut o eroare. Te rugăm să încerci din nou mai târziu.");
-    }
-}
 
 const sfaturi = [
     "Hidratarea este cheia! Bea un pahar cu apă acum. 💧",

@@ -2,20 +2,34 @@
 <html lang="ro">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fitness AI - Dashboard</title>
+
+    <!-- Aplică tema salvată înainte de randare (evită flash-ul) -->
+    <script>
+        document.documentElement.setAttribute('data-theme', localStorage.getItem('theme') || 'dark');
+        if (!localStorage.getItem('user')) window.location.href = 'auth.html';
+    </script>
+
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
+    <script src="script.js" defer></script>
 </head>
 <body>
-<script>if (!localStorage.getItem('user')) window.location.href = 'auth.html';</script>
 
 <div id="grid-pagina">
     <header class="header">
         <div class="logo"><i class="fas fa-dumbbell"></i> Athletica <span class="ai-badge">AI</span></div>
-        <div class="user-pill"><i class="fas fa-user-circle"></i> <span id="display-username"></span></div>
-        <button id="btn-logout" class="btn-logout"><i class="fas fa-sign-out-alt"></i></button>
+        <div class="header-actions">
+            <button id="btn-theme-toggle" class="btn-theme" title="Schimbă tema (dark/light)" aria-label="Schimbă tema">
+                <i class="fas fa-moon"></i>
+            </button>
+            <div class="user-pill"><i class="fas fa-user-circle"></i> <span id="display-username"></span></div>
+            <button id="btn-logout" class="btn-logout" title="Deconectare"><i class="fas fa-sign-out-alt"></i></button>
+        </div>
     </header>
 
     <aside class="sidebar">
@@ -28,16 +42,20 @@
             <button class="tab-btn" data-target="recovery-section"><i class="fas fa-medkit"></i> Recuperare</button>
         </div>
         <button id="btn-show-workout" class="btn-add-action"><i class="fas fa-plus"></i> Antrenament</button>
-        <div class="card-motivation" style="margin-top: 30px; padding: 15px; background: rgba(255,255,255,0.05); border-radius: 10px; border-left: 3px solid #4caf50;">
-            <small style="color: #888; text-transform: uppercase; font-size: 0.7rem;">Sfatul Antrenorului AI:</small>
-            <p id="motivation-text" style="font-size: 0.9rem; color: #ccc; margin-top: 5px; font-style: italic;">"Pregătește-te de succes!"</p>
+        <div class="card-motivation">
+            <small>Sfatul Antrenorului AI:</small>
+            <p id="motivation-text">"Pregătește-te de succes!"</p>
         </div>
-        <div class="music-box" style="margin-top: 20px; padding: 10px; border-top: 1px solid #333;">
-            <h4 style="font-size: 0.8rem; color: #888; margin-bottom: 10px; text-transform: uppercase;">
-                <i class="fas fa-headphones"></i> Gym Motivation
-            </h4>
-            <iframe style="border-radius:12px"
-                    src="https://open.spotify.com/playlist/2SM6rniZl84fEyMCB5KMQB?si=gSfgjEPETf2QjH8N-49dmQ"
+        <div class="music-box">
+            <div class="music-header">
+                <div class="music-icon"><i class="fab fa-spotify"></i></div>
+                <div class="music-meta">
+                    <h4>Gym Motivation</h4>
+                    <small>Energie pentru antrenament</small>
+                </div>
+                <span class="music-eq"><span></span><span></span><span></span><span></span></span>
+            </div>
+            <iframe src="https://open.spotify.com/embed/playlist/2SM6rniZl84fEyMCB5KMQB?utm_source=generator&theme=0"
                     width="100%" height="152" frameBorder="0" allowfullscreen=""
                     allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
                     loading="lazy">
@@ -52,7 +70,7 @@
                     <h2>Sfatul AI Zilnic</h2>
                     <p id="ai-summary">Analizează datele pentru recomandări...</p>
                     <p id="ai-recommendation"></p>
-                    <button id="btn-copy-ai" class="btn-ai-action" style="background: #333; margin-top: 10px; font-size: 0.8rem;">
+                    <button id="btn-copy-ai" class="btn-soft" style="margin-top: 10px;">
                         <i class="fas fa-copy"></i> Copiază Sfatul
                     </button>
                 </div>
@@ -65,9 +83,9 @@
                 <button id="btn-generate-workout" class="btn-primary" style="margin-top: 15px; width: 100%;">Generează Antrenament Personalizat</button>
                 
                 <div id="ai-workout-result" class="feedback-box" style="display:none; margin-top: 20px;">
-                    <h4 id="ai-w-name" style="color: #fff; margin-bottom: 10px; border-bottom: 1px solid #333; padding-bottom: 5px;"></h4>
-                    <div id="ai-w-exercises" style="white-space: pre-wrap; font-family: monospace; color: #ccc; margin-bottom: 15px;"></div>
-                    <div style="font-size: 0.9rem; font-style: italic; color: #888; border-top: 1px solid #333; padding-top: 10px; margin-top: 10px;">
+                    <h4 id="ai-w-name" style="color: var(--text-main); margin-bottom: 10px; border-bottom: 1px solid var(--border-strong); padding-bottom: 5px;"></h4>
+                    <div id="ai-w-exercises" style="white-space: pre-wrap; font-family: monospace; color: var(--text-subtle); margin-bottom: 15px;"></div>
+                    <div style="font-size: 0.9rem; font-style: italic; color: var(--text-faint); border-top: 1px solid var(--border-strong); padding-top: 10px; margin-top: 10px;">
                         <strong>Note AI:</strong> <span id="ai-w-notes"></span>
                     </div>
                 </div>
@@ -253,10 +271,10 @@
                 <button id="btn-generate-meal" class="btn-primary" style="margin-top: 15px; width: 100%;">Generează Masă Personalizată</button>
 
                 <div id="ai-meal-result" class="feedback-box" style="display:none; margin-top: 20px;">
-                    <h4 id="ai-m-name" style="color: #fff; margin-bottom: 10px; border-bottom: 1px solid #333; padding-bottom: 5px;"></h4>
-                    <div id="ai-m-recipe" style="white-space: pre-wrap; color: #ccc; margin-bottom: 15px;"></div>
-                    <div id="ai-m-nutri" style="font-weight: bold; color: #fff; margin-bottom: 10px;"></div>
-                    <div style="font-size: 0.9rem; font-style: italic; color: #888; border-top: 1px solid #333; padding-top: 10px; margin-top: 10px;">
+                    <h4 id="ai-m-name" style="color: var(--text-main); margin-bottom: 10px; border-bottom: 1px solid var(--border-strong); padding-bottom: 5px;"></h4>
+                    <div id="ai-m-recipe" style="white-space: pre-wrap; color: var(--text-subtle); margin-bottom: 15px;"></div>
+                    <div id="ai-m-nutri" style="font-weight: bold; color: var(--text-main); margin-bottom: 10px;"></div>
+                    <div style="font-size: 0.9rem; font-style: italic; color: var(--text-faint); border-top: 1px solid var(--border-strong); padding-top: 10px; margin-top: 10px;">
                         <strong>Logica AI:</strong> <span id="ai-m-reasoning"></span>
                     </div>
                 </div>
@@ -275,9 +293,9 @@
                 <h2><i class="fas fa-comment-medical"></i> Asistent Recuperare AI</h2>
                 <p class="subtitle">Discută cu AI-ul despre durerile tale pentru un protocol personalizat.</p>
                 
-                <div id="recovery-chat-container" style="flex: 1; overflow-y: auto; background: #000; border: 1px solid #222; border-radius: 8px; padding: 20px; margin-bottom: 20px; display: flex; flex-direction: column; gap: 15px;">
+                <div id="recovery-chat-container" style="flex: 1; overflow-y: auto; background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 8px; padding: 20px; margin-bottom: 20px; display: flex; flex-direction: column; gap: 15px;">
                     <!-- Mesajele vor apărea aici -->
-                    <div class="ai-msg" style="background: #111; padding: 12px 15px; border-radius: 12px; border-left: 3px solid #fff; max-width: 85%;">
+                    <div class="ai-msg">
                         Salut! Sunt asistentul tău de recuperare. Spune-mi, ce te doare sau ce disconfort ai astăzi?
                     </div>
                 </div>
@@ -309,16 +327,6 @@
             </div>
             <div class="form-group"><label>Intensitate</label><select id="w-intensity" class="modern-select"><option value="Low">Ușoară</option><option value="Medium" selected>Moderată</option><option value="High">Intensă</option><option value="Max">Maximală</option></select></div>
             <div class="form-group"><label>Detalii (Exerciții / Note)</label><textarea id="w-details" class="modern-textarea" placeholder="Notează seturile sau traseul..."></textarea></div>
-            <div id="rest-timer-section" style="margin-top: 15px; padding: 15px; background: #2c2f33; border-radius: 8px; color: white; text-align: center; border: 1px solid #444;">
-                <h4 style="margin-bottom: 10px; font-weight: normal; font-size: 0.9rem; color: #aaa;">⏱️ Cronometru Pauză</h4>
-                <div id="timer-display" style="color: #4caf50; font-weight: bold; font-size: 1.8rem; margin-bottom: 10px; font-family: monospace;">00:00</div>
-                <div style="display: flex; gap: 8px; justify-content: center;">
-                    <button type="button" onclick="startTimer(60)" style="background: #444; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">60s</button>
-                    <button type="button" onclick="startTimer(90)" style="background: #444; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">90s</button>
-                    <button type="button" onclick="startTimer(120)" style="background: #444; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">120s</button>
-                    <button type="button" onclick="stopTimer()" style="background: #d32f2f; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">Stop</button>
-                </div>
-            </div>
             <div style="display:flex; gap:10px; margin-top:20px;">
                 <button type="submit" class="btn-save" style="flex:2">Salvează Antrenamentul</button>
                 <button type="button" onclick="document.getElementById('workout-modal').style.display='none'" class="btn-cancel" style="flex:1">Anulează</button>
@@ -327,18 +335,5 @@
     </div>
 </div>
 
-<div id="feedback-widget" style="position: fixed; bottom: 20px; right: 20px; width: 300px; background: #1e1e1e; border: 1px solid #333; border-radius: 12px; box-shadow: 0 8px 16px rgba(0,0,0,0.5); z-index: 9999; display: flex; flex-direction: column;">
-    <div style="background: #333; padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; cursor: pointer;" onclick="toggleFeedbackBody()">
-        <h4 style="margin: 0; color: white;"><i class="fas fa-robot" style="color: #4caf50;"></i> Feedback AI</h4>
-        <i id="feedback-toggle-icon" class="fas fa-chevron-up" style="color: #aaa;"></i>
-    </div>
-    <div id="feedback-body" style="display: none; padding: 15px; background: #222;">
-        <p style="color: #aaa; font-size: 0.85rem; margin-top: 0; margin-bottom: 10px;">Ai găsit un bug sau ai o sugestie? Scrie mai jos!</p>
-        <textarea id="feedback-text" rows="3" style="width: 100%; background: #111; color: white; border: 1px solid #444; border-radius: 6px; padding: 8px; resize: none;" placeholder="Ex: Adăugați o temă luminoasă..."></textarea>
-        <button onclick="sendFeedback()" class="btn-primary" style="width: 100%; margin-top: 10px; padding: 8px;">Trimite Sugestia</button>
-    </div>
-</div>
-
-<script src="script.js"></script>
 </body>
 </html>
